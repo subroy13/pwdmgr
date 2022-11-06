@@ -62,7 +62,7 @@ class Password:
         json_string = base64.b64decode(encoded_string.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
         return json.loads(json_string)
 
-    def __encrypt(self, master_key, json_obj):
+    def __encrypt(self, master_key: bytes, json_obj):
         """
             Accepts a master password and encrypts the sensitive information
         """
@@ -70,7 +70,7 @@ class Password:
         msg = self.__base64encode(json_obj)
         return f.encrypt(msg.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
         
-    def __decrypt(self, master_key, msg: str):
+    def __decrypt(self, master_key: bytes, msg: str):
         """
             Accepts a master password and decrypts the sensitive information
         """
@@ -84,9 +84,9 @@ class Password:
             - Add a sensitive information
             - Encrypt it back
         """
+        master_key = self.auth_user.generateMasterKey(master_pwd)
         if self.sensitive_info is not None:
             try:
-                master_key = self.auth_user.generateMasterKey(master_pwd)
                 info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
                 raise PermissionError("Invalid master password used for decryption")
@@ -104,9 +104,9 @@ class Password:
             - Add a sensitive information
             - Encrypt it back
         """
+        master_key = self.auth_user.generateMasterKey(master_pwd)
         if self.sensitive_info is not None:
             try:
-                master_key = self.auth_user.generateMasterKey(master_pwd)
                 info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
                 raise PermissionError("Invalid master password used for decryption")
@@ -126,9 +126,9 @@ class Password:
             - Update a sensitive information
             - Encrypt it back
         """
+        master_key = self.auth_user.generateMasterKey(master_pwd)
         if self.sensitive_info is not None:
             try:
-                master_key = self.auth_user.generateMasterKey(master_pwd)
                 info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
                 raise PermissionError("Invalid master password used for decryption")
@@ -147,9 +147,9 @@ class Password:
             - Delete the sensitive information key
             - Encrypt it back
         """
+        master_key = self.auth_user.generateMasterKey(master_pwd)
         if self.sensitive_info is not None:
             try:
-                master_key = self.auth_user.generateMasterKey(master_pwd)
                 info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
                 raise PermissionError("Invalid master password used for decryption")

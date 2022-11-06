@@ -19,7 +19,7 @@ def __getUserByUsername(username: str):
             password_crypt=matched_user.iloc[0]['PasswordCrypt'],
             created_at=datetime.utcfromtimestamp(matched_user.iloc[0]['CreatedAt']),
             lastmodified_at=datetime.utcfromtimestamp(matched_user.iloc[0]['LastModifiedAt']),
-            id = matched_user.iloc[0]['Userid']
+            user_id = matched_user.iloc[0]['Userid']
         )
         return user        
     else:

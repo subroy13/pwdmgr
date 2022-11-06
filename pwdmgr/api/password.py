@@ -79,5 +79,29 @@ def createPassword(
     __savePassword(newpass)
 
 
+# Required a logged in user
+# show a password for the user
+def searchPassword(dbuser: User, master_pwd: str, searchstring: str):
+    passdf = pd.read_csv(Config.PASSWORD_STORAGE)
+    passdf['searchfield'] = passdf['Name'].str.lower() + " " + passdf['Type'].str.lower() + " " + passdf['Description'].str.lower()
+    matches = passdf.loc[passdf['searchfield'].str.contains(searchstring)]
+    if matches.shape[0] > 0:
+        pwd = Password(
+            pwd_id=matches.iloc[0]['PwdId'],
+            pwdname=matches.iloc[0]['Name'],
+            pwdtype=matches.iloc[0]['Type'],
+            sensitive_info=matches.iloc[0]['SensitiveInfo'],
+            created_at=matches.iloc[0]['CreatedAt'],
+            lastmodified_at=matches.iloc[0]['LastModifiedAt'],
+            description=matches.iloc[0]['Description'],
+            user = dbuser
+        )
+        return (pwd.pwdname, pwd.pwdtype, pwd.description, pwd.render(master_pwd))
+    else:
+        return (None, None, None, None)
+
+
+
+
 
     

@@ -1,22 +1,15 @@
-from pwdmgr.models.password import Password
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import os, base64
+from pwdmgr.api import signUpUser, signInUser, createPassword, searchPassword
 
-salt = b"random_string"
-kdf = PBKDF2HMAC(algorithm=hashes.SHA256(),length=32,salt=salt,iterations=390000)
-key = base64.urlsafe_b64encode(kdf.derive("password".encode('ascii')))
-print(key)
+username = "subroy13"
+pwd = "test1234"
 
-kdf2 = PBKDF2HMAC(algorithm=hashes.SHA256(),length=32,salt=salt,iterations=390000)
-key2 = base64.urlsafe_b64encode(kdf2.derive("ehllo".encode('ascii')))
-print(key2)
+# x = signUpUser(username, pwd, pwd)
+# print(x)
 
-x = Password('facebook', 'social', None)
-x.addSensitiveInformation('username', 'subroy13', key)
-x.addSensitiveInformation('password', 'royfbid', key2)
+user = signInUser(username, pwd)
+print(user)
 
-print(x.peek())
-print(x.render(key))
-print(x.render(key2))
+# p1 = createPassword(user, pwd, 'Facebook', 'Social', None, {"password": "royfbid", "security question": "your birth place"})
 
+p2 = searchPassword(user, pwd, "facebook")
+print(p2)
