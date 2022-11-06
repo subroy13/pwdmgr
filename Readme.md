@@ -16,6 +16,7 @@
 2. pandas
 3. cryptography
 4. uuid
+5. base64
 
 To run the application simply use:
 
@@ -24,7 +25,7 @@ To run the application simply use:
 
 ## Bug Fixes
 
-You are free to look at the source code to find out bugs and potential security vulnerabilities. Please raise them in github issues.
+You are free to look at the source code to find out bugs and potential security vulnerabilities. Please raise them in GitHub issues.
 
 
 

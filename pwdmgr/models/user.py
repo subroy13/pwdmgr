@@ -1,4 +1,5 @@
-import os
+import os, uuid
+from datetime import datetime
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.hashes import SHA256
@@ -8,53 +9,56 @@ from ..config import Config
 class User:
     """
         This class represent an user object
+            - userid
             - username
             - password_crypt
-            - salt object randomly generated
+            - salt
+            - created_at
+            - lastmodified_at
     """
-    def __init__(self, username: str, salt: str = None, password: str = None, password_crypt: str = None):
-        self.__username = username
-        if salt is None:
-            self.__salt = os.urandom(16).decode(Config.BYTES_ENCODING)
+    def __init__(
+        self, 
+        username: str, 
+        password: str = None, 
+        password_crypt: str = None,
+        salt: str = None, 
+        created_at = None,
+        lastmodified_at = None,
+        user_id: str = None
+    ):
+        self.username = username
+        self.id = user_id if user_id is not None else uuid.uuid4().hex
+        self.created_at = self.__processDateTime(created_at)
+        self.lastmodified_at = self.__processDateTime(lastmodified_at)        
+        self.salt = salt if salt is not None else os.urandom(16).decode(Config.BYTES_ENCODING)
+        assert password is None or password_crypt is None, "Only one of password or password crypt must be provided"
+        assert password is not None or password_crypt is not None, "Only one of password or password crypt must be provided"
+        self.password_crypt = password_crypt if password_crypt is not None else self.create_password_crypt(password, self.salt)
+
+    def __processDateTime(self, ts):
+        if ts is None:
+            return datetime.now().timestamp()
+        elif isinstance(ts, datetime):
+            return ts.timestamp()
         else:
-            self.__salt = salt
-        if password_crypt is None:
-            assert password is not None, "Atleast one of password or password hash should be not null"
-            self.__password_crypt = self.create_password_crypt(password, self.__salt)
-        else:
-            self.__password_crypt = password_crypt
+            return float(ts)
 
     def create_password_crypt(self, password: str, salt: str):
         kdf = Scrypt(salt.encode(Config.BYTES_ENCODING), 32, n = 2**14, r = 8, p = 1)
         return kdf.derive(password.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
 
     def verify_password_crypt(self, password: str):
-        kdf = Scrypt(self.__salt.encode(Config.BYTES_ENCODING), 32, n = 2**14, r = 8, p = 1)
+        kdf = Scrypt(self.salt.encode(Config.BYTES_ENCODING), 32, n = 2**14, r = 8, p = 1)
         try:
-            kdf.verify(password.encode(Config.BYTES_ENCODING), self.__password_crypt.encode(Config.BYTES_ENCODING))
-            return (True, self.__generateMasterKey(password))
+            kdf.verify(password.encode(Config.BYTES_ENCODING), self.password_crypt.encode(Config.BYTES_ENCODING))
+            return True
         except Exception as e:
-            return (False, None)
+            return False
 
-    def getData(self):
-        return {
-            "Username": self.__username,
-            "Salt": self.__salt,
-            "PasswordHash": self.__password_crypt 
-        }
-
-    def __generateMasterKey(self, password: str):
-        kdf = PBKDF2HMAC(algorithm=SHA256(),length=32, salt=self.__salt,iterations=390000)
-        key = kdf.derive(password.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
-        return key
-
-
-
-
-
-
-
-
-
-
-
+    def generateMasterKey(self, password: str):
+        if self.verify_password_crypt(password):
+            kdf = PBKDF2HMAC(algorithm=SHA256(),length=32, salt=self.salt,iterations=390000)
+            key = kdf.derive(password.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
+            return key
+        else:
+            raise PermissionError("Incorrect password, cannot generate master key")

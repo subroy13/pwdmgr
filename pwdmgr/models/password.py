@@ -1,29 +1,58 @@
-import json 
-import base64
+import os, json, uuid, base64
+from datetime import datetime
 from cryptography.fernet import Fernet
-from ..config import Config
+
+from ..config import Config 
+from .user import User
 
 
 class Password:
     """
-        A password object holds 4 things
+        A password object holds these things
+            - PwdId (Password Id - GUID)
             - Name  (Unique name that identifies each password)
             - Type  (Some kind of groupings that you want)
             - Description (Some searchable string, by default same as the name)
             - SensitiveInfo (The encrypted version of base64encoded JSON containing all sensitive information)
+            - Userid (The id of the user who is associated with this password)
+            - created_at
+            - lastmodified_at
     """
-    def __init__(self, pwdname: str, pwdtype: str = None, description: str = None, sensitive_info: str = None):
-        self.__pwdname = pwdname
-        self.__pwdtype = pwdtype if pwdtype is not None else 'Others'
-        self.__description = description if description is not None else pwdname
-        self.__sensitive_info = sensitive_info
-        self.__checkValidProp(self.__pwdname, "Name")
-        self.__checkValidProp(self.__pwdtype, "Type")
-        self.__checkValidProp(self.__description, "Description")
+    def __init__(
+        self,
+        pwdname: str,
+        user: User,
+        pwdtype: str,
+        description: str = None,
+        sensitive_info: str = None,
+        created_at = None,
+        lastmodified_at = None,
+        pwd_id: str = None
+    ): 
+        self.pwdname = pwdname
+        self.pwdtype = pwdtype
+        self.auth_user = user
+        self.id = pwd_id if pwd_id is not None else uuid.uuid4().hex 
+        self.created_at = self.__processDateTime(created_at)
+        self.lastmodified_at = self.__processDateTime(lastmodified_at)        
+        self.description = description if description is not None else pwdname
+        self.sensitive_info = sensitive_info
+        self.__checkValidProp(self.pwdname, "Name")
+        self.__checkValidProp(self.pwdtype, "Type")
+        self.__checkValidProp(self.description, "Description")
 
+    
     def __checkValidProp(self, prop, propname):
         assert prop is not None, str(propname).capitalize() + " must not be empty"
         assert isinstance(prop, str), str(propname).capitalize() + " must be a string"
+
+    def __processDateTime(self, ts):
+        if ts is None:
+            return datetime.now().timestamp()
+        elif isinstance(ts, datetime):
+            return ts.timestamp()
+        else:
+            return float(ts)
 
     def __base64encode(self, json_object):
         json_string = json.dumps(json_object)
@@ -49,91 +78,101 @@ class Password:
         decrypt_string = f.decrypt(msg.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
         return self.__base64decode(decrypt_string)
 
-
-    def addSensitiveInformation(self, key, value, master_key): 
+    def addSensitiveInformation(self, key: str, value, master_pwd: str): 
         """
             - Decrypt the current sensitive information
             - Add a sensitive information
             - Encrypt it back
         """
-        if self.__sensitive_info is not None:
+        if self.sensitive_info is not None:
             try:
-                info_json_string = self.__decrypt(master_key, self.__sensitive_info)
+                master_key = self.auth_user.generateMasterKey(master_pwd)
+                info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
-                raise PermissionError("Invalid master key used for decryption")
+                raise PermissionError("Invalid master password used for decryption")
         else:
             info_json_string = {}
         if key in info_json_string:
             raise KeyError("Key already exists!")
         else:
             info_json_string[key] = value
-        self.__sensitive_info = self.__encrypt(master_key, info_json_string)
+        self.sensitive_info = self.__encrypt(master_key, info_json_string)
+
+    def bulkAddSensitiveInformation(self, items: dict, master_pwd: str): 
+        """
+            - Decrypt the current sensitive information
+            - Add a sensitive information
+            - Encrypt it back
+        """
+        if self.sensitive_info is not None:
+            try:
+                master_key = self.auth_user.generateMasterKey(master_pwd)
+                info_json_string = self.__decrypt(master_key, self.sensitive_info)
+            except Exception as e:
+                raise PermissionError("Invalid master password used for decryption")
+        else:
+            info_json_string = {}
+        for key in items:
+            if key in info_json_string:
+                raise KeyError("Key " + key + " already exists!")
+            else:
+                info_json_string[key] = items[key]
+        self.sensitive_info = self.__encrypt(master_key, info_json_string)
 
     
-    def updateSensitiveInformation(self, key, newvalue, master_key):
+    def updateSensitiveInformation(self, key, newvalue, master_pwd):
         """
             - Decrypt the current sensitive information
             - Update a sensitive information
             - Encrypt it back
         """
-        if self.__sensitive_info is not None:
+        if self.sensitive_info is not None:
             try:
-                info_json_string = self.__decrypt(master_key, self.__sensitive_info)
+                master_key = self.auth_user.generateMasterKey(master_pwd)
+                info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
-                raise PermissionError("Invalid master key used for decryption")
+                raise PermissionError("Invalid master password used for decryption")
         else:
             info_json_string = {}
         if key not in info_json_string:
             raise KeyError("Key does not exist!")
         else:
             info_json_string[key] = newvalue
-        self.__sensitive_info = self.__encrypt(master_key, info_json_string)
+        self.sensitive_info = self.__encrypt(master_key, info_json_string)
 
 
-    def deleteSensitiveInformation(self, key, master_key):
+    def deleteSensitiveInformation(self, key, master_pwd):
         """
             - Decrypt the current sensitive information
             - Delete the sensitive information key
             - Encrypt it back
         """
-        if self.__sensitive_info is not None:
+        if self.sensitive_info is not None:
             try:
-                info_json_string = self.__decrypt(master_key, self.__sensitive_info)
+                master_key = self.auth_user.generateMasterKey(master_pwd)
+                info_json_string = self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
-                raise PermissionError("Invalid master key used for decryption")
+                raise PermissionError("Invalid master password used for decryption")
         else:
             info_json_string = {}
         if key not in info_json_string:
             raise KeyError("Key does not exist!")
         else:
             del info_json_string[key]
-        self.__sensitive_info = self.__encrypt(master_key, info_json_string)
+        self.sensitive_info = self.__encrypt(master_key, info_json_string)
 
-    def render(self, master_key):
+    def render(self, master_pwd):
         """
             Decrypt the password and show the JSON
         """
-        if self.__sensitive_info is None:
+        if self.sensitive_info is None:
             return {}
         else:
             try: 
-                return self.__decrypt(master_key, self.__sensitive_info)
+                master_key = self.auth_user.generateMasterKey(master_pwd)
+                return self.__decrypt(master_key, self.sensitive_info)
             except Exception as e:
-                raise PermissionError("Invalid master key used for decryption")
+                raise PermissionError("Invalid master password used for decryption")
 
-    def getData(self):
-        """
-            Gets the data which we need to store
-        """
-        return {
-            "Name": self.__pwdname,
-            "Type": self.__pwdtype,
-            "Description": self.__description,
-            "SensitiveInfo": self.__sensitive_info
-        }
-
-
-
-
-
-
+    
+    
