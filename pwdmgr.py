@@ -4,9 +4,12 @@ from pwdmgr import (
     signInUser, 
     signUpUser,
     searchPassword,
-    createPassword
+    createPassword,
+    editPassword,
+    deletePassword
 )
 from pwdmgr.config import Config
+from pwdmgr.models import Password
 
 class PasswordManager:
     """
@@ -55,11 +58,25 @@ class PasswordManager:
 
     def doSearch(self):
         searchtext = input('Input your search text: ')
-        password = getpass('Input your master password: ')
-        plain_pass = searchPassword(self.auth_user, password, searchtext)
+        password = getpass('Input your master password: ')  # TODO: do validation
+        plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
+        print("We found {} many passwords matching your search input.".format(len(plain_passes)))
 
-        # TODO: print the plain password in better manner
-        print(plain_pass)
+        while True:
+            try:
+                for i in range(len(plain_passes)):
+                    print("{}: {} - {} - {}".format(
+                        i + 1,
+                        plain_passes[i].pwdname,
+                        plain_passes[i].pwdtype,
+                        plain_passes[i].description[:50] + "..."
+                    ))
+                x = input('Select the password number you wish to display: ')
+                print(plain_passes[int(x - 1)].pwdname, " : ", plain_passes[int(x - 1)].render())
+                break
+            except Exception as e:
+                print("\n")
+
         
     def doCreatePasswordAndStore(self):
         pwdname = input('Input your password name: ')
@@ -77,7 +94,64 @@ class PasswordManager:
         password = getpass('Input your master password: ')
         createPassword(self.auth_user, password, pwdname, pwdtype, description, pwd_obj)
         print("Your password {} is stored securely encrypted with your master password.".format(pwdname))
-        
+    
+    def doEditPassword(self):
+        searchtext = input('Search the password you want to edit: ')
+        password = getpass('Input your master password: ')
+        plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
+        print("We found {} many passwords matching your search input.".format(len(plain_passes)))
+
+        while True:
+            try:
+                for i in range(len(plain_passes)):
+                    print("{}: {} - {} - {}".format(
+                        i + 1,
+                        plain_passes[i].pwdname,
+                        plain_passes[i].pwdtype,
+                        plain_passes[i].description[:50] + "..."
+                    ))
+                x = input('Select the password number you wish to edit: ')
+                pwd_to_edit = plain_passes[int(x - 1)]
+                editfields = pwd_to_edit.getEditableFields()
+                while True:
+                    try: 
+                        for j in range(len(editfields)):
+                            print("{}: {}".format(j+1, editfields[j]))
+                        y = input('Select the field you want to edit in the password: ')
+                        val = input('Input the new value for the corresponding field (Keep it blank if you want to delete the key): ')
+                        editPassword(self.auth_user, password, pwd_to_edit, editfields[int(y - 1)], val)
+                        print("Your password has changed successfully")
+                        break
+                    except Exception as e:
+                        print("\n")
+                break
+            except Exception as e:
+                print("\n")
+
+    def doDeletePassword(self):
+        searchtext = input('Search the password you want to edit: ')
+        password = getpass('Input your master password: ')   # TODO: do validation
+        plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
+        print("We found {} many passwords matching your search input.".format(len(plain_passes)))
+        while True:
+            try:
+                for i in range(len(plain_passes)):
+                    print("{}: {} - {} - {}".format(
+                        i + 1,
+                        plain_passes[i].pwdname,
+                        plain_passes[i].pwdtype,
+                        plain_passes[i].description[:50] + "..."
+                    ))
+                x = input('Select the password number you wish to delete: ')
+                pwd_to_delete = plain_passes[int(x - 1)]
+                confirm = input("Are you sure you wish to delete password {}? ".format(pwd_to_delete.pwdname))
+                if confirm.lower() in ["y", "yes", "yeah", "ok"]:
+                    deletePassword(self.auth_user, pwd_to_delete)
+                    print("Password deleted successfully.")
+                
+            except Exception as e:
+                print("\n")
+
 
     def start(self):
         self.showStartMessage()
@@ -100,11 +174,9 @@ class PasswordManager:
                     elif user_choice['action'] == "createpass":
                         self.doCreatePasswordAndStore()
                     elif user_choice['action'] == "editpass":
-                        print('Action: editpass')
-                        pass
+                        self.doEditPassword()
                     elif user_choice['action'] == "deletepass":
-                        print('Action: deletepass')
-                        pass
+                        self.doDeletePassword()
                     elif user_choice['action'] == "logout":
                         self.auth_user = None
                         self.cur_menu = Config.NAV_MENU_PATHS

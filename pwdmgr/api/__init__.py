@@ -1,2 +1,2 @@
 from .auth import signUpUser, signInUser
-from .password import createPassword, searchPassword
+from .password import createPassword, searchPassword, editPassword

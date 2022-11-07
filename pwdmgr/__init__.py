@@ -2,5 +2,7 @@ from .api import (
     signUpUser, 
     signInUser, 
     searchPassword,
-    createPassword
+    createPassword,
+    editPassword,
+    deletePassword
 )

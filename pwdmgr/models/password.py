@@ -175,4 +175,17 @@ class Password:
                 raise PermissionError("Invalid master password used for decryption")
 
     
+    def getEditableFields(self, master_pwd):
+        """
+            Lists the fields which are editable
+        """
+        master_key = self.auth_user.generateMasterKey(master_pwd)
+        if self.sensitive_info is not None:
+            try:
+                info_json_string = self.__decrypt(master_key, self.sensitive_info)
+            except Exception as e:
+                raise PermissionError("Invalid master password used for decryption")
+        else:
+            info_json_string = {}
+        return ["description"] + ["sensitive_info->" + key for key in info_json_string.keys()]
     

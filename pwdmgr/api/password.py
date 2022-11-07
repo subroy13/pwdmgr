@@ -81,26 +81,56 @@ def createPassword(
 
 # Required a logged in user
 # show a password for the user
-def searchPassword(dbuser: User, master_pwd: str, searchstring: str):
+def searchPassword(dbuser: User, searchstring: str):
+    MAX_LIMIT = 5
     passdf = pd.read_csv(Config.PASSWORD_STORAGE)
     passdf['searchfield'] = passdf['Name'].str.lower() + " " + passdf['Type'].str.lower() + " " + passdf['Description'].str.lower()
-    matches = passdf.loc[passdf['searchfield'].str.contains(searchstring)]
-    if matches.shape[0] > 0:
+    matches = passdf.loc[passdf['searchfield'].str.contains(searchstring) & passdf['Userid'] == dbuser.id].reset_index(drop = True).iloc[:MAX_LIMIT]
+    pwdlist = []
+    for i, row in matches.iterrows():
         pwd = Password(
-            pwd_id=matches.iloc[0]['PwdId'],
-            pwdname=matches.iloc[0]['Name'],
-            pwdtype=matches.iloc[0]['Type'],
-            sensitive_info=matches.iloc[0]['SensitiveInfo'],
-            created_at=matches.iloc[0]['CreatedAt'],
-            lastmodified_at=matches.iloc[0]['LastModifiedAt'],
-            description=matches.iloc[0]['Description'],
+            pwd_id=matches.iloc[i]['PwdId'],
+            pwdname=matches.iloc[i]['Name'],
+            pwdtype=matches.iloc[i]['Type'],
+            sensitive_info=matches.iloc[i]['SensitiveInfo'],
+            created_at=matches.iloc[i]['CreatedAt'],
+            lastmodified_at=matches.iloc[i]['LastModifiedAt'],
+            description=matches.iloc[i]['Description'],
             user = dbuser
         )
-        return (pwd.pwdname, pwd.pwdtype, pwd.description, pwd.render(master_pwd))
+    pwdlist.append(pwd)
+    return pwdlist
+
+
+# Requires a logged in user
+# edit a password field
+def editPassword(
+    dbuser: User, 
+    master_pwd: str, 
+    pwd: Password,
+    editkey: str, 
+    editvalue: str
+):
+    if editkey == "description":
+        pwd.description = editvalue
     else:
-        return (None, None, None, None)
+        actual_key = editkey[16:]
+        if editvalue == "":
+            # means need to delete the key
+            pwd.deleteSensitiveInformation(actual_key, master_pwd)
+        else:
+            # meeans need to update the key
+            pwd.updateSensitiveInformation(actual_key, editvalue, master_pwd)
 
+    # finally update the password
+    __updatePassword(pwd)
+    
 
+def deletePassword(dbuser: User, master_pwd: str, pwd: Password):
+    # Deletes an existing password
+    passdf = pd.read_csv(Config.PASSWORD_STORAGE)
+    passdf = passdf.loc[passdf['PwdId'] != pwd.id]
+    passdf.to_csv(Config.PASSWORD_STORAGE, index = False)
 
 
 
