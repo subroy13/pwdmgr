@@ -128,9 +128,12 @@ def editPassword(
 
 def deletePassword(dbuser: User, master_pwd: str, pwd: Password):
     # Deletes an existing password
-    passdf = pd.read_csv(Config.PASSWORD_STORAGE)
-    passdf = passdf.loc[passdf['PwdId'] != pwd.id]
-    passdf.to_csv(Config.PASSWORD_STORAGE, index = False)
+    if pwd.isValidMasterPassword(master_pwd):
+        passdf = pd.read_csv(Config.PASSWORD_STORAGE)
+        passdf = passdf.loc[passdf['PwdId'] != pwd.id]
+        passdf.to_csv(Config.PASSWORD_STORAGE, index = False)
+    else:
+        raise PermissionError("Invalid master password used for decryption")
 
 
 

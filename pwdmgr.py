@@ -58,7 +58,6 @@ class PasswordManager:
 
     def doSearch(self):
         searchtext = input('Input your search text: ')
-        password = getpass('Input your master password: ')  # TODO: do validation
         plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
         print("We found {} many passwords matching your search input.".format(len(plain_passes)))
 
@@ -72,7 +71,8 @@ class PasswordManager:
                         plain_passes[i].description[:50] + "..."
                     ))
                 x = input('Select the password number you wish to display: ')
-                print(plain_passes[int(x - 1)].pwdname, " : ", plain_passes[int(x - 1)].render())
+                password = getpass('Input your master password: ')
+                print(plain_passes[int(x - 1)].pwdname, " : ", plain_passes[int(x - 1)].render(password))
                 break
             except Exception as e:
                 print("\n")
@@ -143,10 +143,11 @@ class PasswordManager:
                         plain_passes[i].description[:50] + "..."
                     ))
                 x = input('Select the password number you wish to delete: ')
+                password = getpass('Input your master password: ')
                 pwd_to_delete = plain_passes[int(x - 1)]
                 confirm = input("Are you sure you wish to delete password {}? ".format(pwd_to_delete.pwdname))
                 if confirm.lower() in ["y", "yes", "yeah", "ok"]:
-                    deletePassword(self.auth_user, pwd_to_delete)
+                    deletePassword(self.auth_user, password, pwd_to_delete)
                     print("Password deleted successfully.")
                 
             except Exception as e:

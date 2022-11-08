@@ -174,6 +174,17 @@ class Password:
             except Exception as e:
                 raise PermissionError("Invalid master password used for decryption")
 
+    def isValidMasterPassword(self, master_pwd):
+        """
+            Tries to decrypt the password and checks validity of the master password
+        """
+        try:
+            master_key = self.auth_user.generateMasterKey(master_pwd)
+            self.__decrypt(master_key, self.sensitive_info)
+            return True
+        except Exception as e:
+            return False
+
     
     def getEditableFields(self, master_pwd):
         """
