@@ -198,5 +198,5 @@ class Password:
                 raise PermissionError("Invalid master password used for decryption")
         else:
             info_json_string = {}
-        return ["description"] + ["sensitive_info->" + key for key in info_json_string.keys()]
+        return ["description"] + ["sensitive_info->NEW"] + ["sensitive_info->" + key for key in info_json_string.keys()]
     

@@ -1,3 +1,4 @@
+import os
 from getpass import getpass
 
 from pwdmgr import (
@@ -27,9 +28,13 @@ class PasswordManager:
         print('Please follow the on screen guidelines to help you navigate through the application')
 
     def showWelcomeMessage(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
         print(' -' * 50)
         print("Welcome {}, you can type `exit` or `quit` when you are done".format("Guest User" if self.auth_user is None else self.auth_user.username))
         print(' -' * 50)
+
+    def waitForKeypress(self):
+        x = input("Press any key to continue: ")
 
     def showNavChoices(self, choice_list):
         for choice in choice_list:
@@ -49,33 +54,41 @@ class PasswordManager:
         confirm_password = getpass('Confirm your master password: ')
         signUpUser(username, password, confirm_password)
         print('Congrats! you have successfully created an account.')
+        self.waitForKeypress()
 
     def doLogin(self):
         username = input('Input your registered user name: ')
         password = getpass('Input your master password: ')
         auth_user = signInUser(username, password)
         self.auth_user = auth_user
+        print('You have successfully logged in.')
+        self.waitForKeypress()
 
     def doSearch(self):
         searchtext = input('Input your search text: ')
         plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
         print("We found {} many passwords matching your search input.".format(len(plain_passes)))
 
-        while True:
-            try:
-                for i in range(len(plain_passes)):
-                    print("{}: {} - {} - {}".format(
-                        i + 1,
-                        plain_passes[i].pwdname,
-                        plain_passes[i].pwdtype,
-                        plain_passes[i].description[:50] + "..."
-                    ))
-                x = input('Select the password number you wish to display: ')
-                password = getpass('Input your master password: ')
-                print(plain_passes[int(x - 1)].pwdname, " : ", plain_passes[int(x - 1)].render(password))
-                break
-            except Exception as e:
-                print("\n")
+        if len(plain_passes) > 0:
+            while True:
+                try:
+                    for i in range(len(plain_passes)):
+                        print("{}: {} - {} - {}".format(
+                            i + 1,
+                            plain_passes[i].pwdname,
+                            plain_passes[i].pwdtype,
+                            plain_passes[i].description[:100] + "..."
+                        ))
+                    x = int(input('Select the password number you wish to display: '))
+                    password = getpass('Input your master password: ')
+                    print(plain_passes[int(x - 1)].pwdname, " : ", plain_passes[int(x - 1)].render(password))
+                    self.waitForKeypress()
+                    break
+                except Exception as e:
+                    print("\n")
+                    raise e
+        else:
+            self.waitForKeypress()
 
         
     def doCreatePasswordAndStore(self):
@@ -94,10 +107,10 @@ class PasswordManager:
         password = getpass('Input your master password: ')
         createPassword(self.auth_user, password, pwdname, pwdtype, description, pwd_obj)
         print("Your password {} is stored securely encrypted with your master password.".format(pwdname))
+        self.waitForKeypress()
     
     def doEditPassword(self):
         searchtext = input('Search the password you want to edit: ')
-        password = getpass('Input your master password: ')
         plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
         print("We found {} many passwords matching your search input.".format(len(plain_passes)))
 
@@ -108,29 +121,36 @@ class PasswordManager:
                         i + 1,
                         plain_passes[i].pwdname,
                         plain_passes[i].pwdtype,
-                        plain_passes[i].description[:50] + "..."
+                        plain_passes[i].description[:100] + "..."
                     ))
-                x = input('Select the password number you wish to edit: ')
+                x = int(input('Select the password number you wish to edit: '))
+                password = getpass('Input your master password: ')
                 pwd_to_edit = plain_passes[int(x - 1)]
-                editfields = pwd_to_edit.getEditableFields()
+                editfields = pwd_to_edit.getEditableFields(password)
                 while True:
                     try: 
                         for j in range(len(editfields)):
                             print("{}: {}".format(j+1, editfields[j]))
-                        y = input('Select the field you want to edit in the password: ')
-                        val = input('Input the new value for the corresponding field (Keep it blank if you want to delete the key): ')
-                        editPassword(self.auth_user, password, pwd_to_edit, editfields[int(y - 1)], val)
+                        y = int(input('Select the field you want to edit in the password (Select 2 to add new field to sensitive info): '))
+                        if (y == 2):
+                            editfieldkey = input('Input the new field you want to add: ')
+                            val = input('Input the new value for the field: ')
+                            editPassword(self.auth_user, password, pwd_to_edit, "sensitive_info->NEW->" + editfieldkey, val)
+                        else:
+                            val = input('Input the new value for the corresponding field (Keep it blank if you want to delete the key): ')
+                            editPassword(self.auth_user, password, pwd_to_edit, editfields[int(y - 1)], val)
                         print("Your password has changed successfully")
+                        self.waitForKeypress()
                         break
                     except Exception as e:
                         print("\n")
                 break
             except Exception as e:
                 print("\n")
+                raise e
 
     def doDeletePassword(self):
         searchtext = input('Search the password you want to edit: ')
-        password = getpass('Input your master password: ')   # TODO: do validation
         plain_passes: list[Password] = searchPassword(self.auth_user, searchtext)
         print("We found {} many passwords matching your search input.".format(len(plain_passes)))
         while True:
@@ -142,16 +162,18 @@ class PasswordManager:
                         plain_passes[i].pwdtype,
                         plain_passes[i].description[:50] + "..."
                     ))
-                x = input('Select the password number you wish to delete: ')
+                x = int(input('Select the password number you wish to delete: '))
                 password = getpass('Input your master password: ')
                 pwd_to_delete = plain_passes[int(x - 1)]
                 confirm = input("Are you sure you wish to delete password {}? ".format(pwd_to_delete.pwdname))
                 if confirm.lower() in ["y", "yes", "yeah", "ok"]:
                     deletePassword(self.auth_user, password, pwd_to_delete)
                     print("Password deleted successfully.")
+                    self.waitForKeypress()
                 
             except Exception as e:
                 print("\n")
+                raise e
 
 
     def start(self):
@@ -164,6 +186,7 @@ class PasswordManager:
                 user_choice = self.showNavChoices(self.cur_menu)
                 if user_choice is not None:
                     if user_choice['action'] == 'quit':
+                        print('Good Bye!')
                         break   # exit the application
                     elif user_choice['action'] == 'signup':
                         self.doSignUp()
@@ -184,6 +207,7 @@ class PasswordManager:
 
             except Exception as e:
                 print("Error: ", e)
+                self.waitForKeypress()
 
 
 if __name__ == "__main__":

@@ -85,20 +85,21 @@ def searchPassword(dbuser: User, searchstring: str):
     MAX_LIMIT = 5
     passdf = pd.read_csv(Config.PASSWORD_STORAGE)
     passdf['searchfield'] = passdf['Name'].str.lower() + " " + passdf['Type'].str.lower() + " " + passdf['Description'].str.lower()
-    matches = passdf.loc[passdf['searchfield'].str.contains(searchstring) & passdf['Userid'] == dbuser.id].reset_index(drop = True).iloc[:MAX_LIMIT]
+    searchstring = searchstring.lower()
+    matches = passdf.loc[(passdf['searchfield'].str.contains(searchstring)) & (passdf['Userid'] == dbuser.id)].reset_index(drop = True).iloc[:MAX_LIMIT]
     pwdlist = []
     for i, row in matches.iterrows():
         pwd = Password(
-            pwd_id=matches.iloc[i]['PwdId'],
-            pwdname=matches.iloc[i]['Name'],
-            pwdtype=matches.iloc[i]['Type'],
-            sensitive_info=matches.iloc[i]['SensitiveInfo'],
-            created_at=matches.iloc[i]['CreatedAt'],
-            lastmodified_at=matches.iloc[i]['LastModifiedAt'],
-            description=matches.iloc[i]['Description'],
+            pwd_id=row['PwdId'],
+            pwdname=row['Name'],
+            pwdtype=row['Type'],
+            sensitive_info=row['SensitiveInfo'],
+            created_at=row['CreatedAt'],
+            lastmodified_at=row['LastModifiedAt'],
+            description=row['Description'],
             user = dbuser
         )
-    pwdlist.append(pwd)
+        pwdlist.append(pwd)
     return pwdlist
 
 
@@ -115,12 +116,16 @@ def editPassword(
         pwd.description = editvalue
     else:
         actual_key = editkey[16:]
-        if editvalue == "":
-            # means need to delete the key
-            pwd.deleteSensitiveInformation(actual_key, master_pwd)
+        if actual_key.startswith("NEW"):
+            addkey = actual_key[5:]
+            pwd.addSensitiveInformation(addkey, editvalue, master_pwd)
         else:
-            # meeans need to update the key
-            pwd.updateSensitiveInformation(actual_key, editvalue, master_pwd)
+            if editvalue == "":
+                # means need to delete the key
+                pwd.deleteSensitiveInformation(actual_key, master_pwd)
+            else:
+                # meeans need to update the key
+                pwd.updateSensitiveInformation(actual_key, editvalue, master_pwd)
 
     # finally update the password
     __updatePassword(pwd)
