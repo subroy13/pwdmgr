@@ -38,6 +38,11 @@ class Config:
                     "action": "deletepass"
                 },
                 {
+                    "choice": "5",
+                    "display_text": "list all your password metadata",
+                    "action": "listpass"
+                },
+                {
                     "choice": "0",
                     "display_text": "Log out",
                     "action": "logout"

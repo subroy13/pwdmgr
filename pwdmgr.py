@@ -1,5 +1,6 @@
 import os
 from getpass import getpass
+import datetime as dt
 
 from pwdmgr import (
     signInUser, 
@@ -7,7 +8,8 @@ from pwdmgr import (
     searchPassword,
     createPassword,
     editPassword,
-    deletePassword
+    deletePassword,
+    listPasswords
 )
 from pwdmgr.config import Config
 from pwdmgr.models import Password
@@ -21,17 +23,14 @@ class PasswordManager:
         self.auth_user = None
         self.cur_menu = Config.NAV_MENU_PATHS
 
-    def showStartMessage(self):
-        print("=" * 50)
-        print("=" * 10 + " PASSWORD MANAGER " + "=" * 10)
-        print("=" * 50)
-        print('Please follow the on screen guidelines to help you navigate through the application')
-
     def showWelcomeMessage(self):
         os.system('cls' if os.name == 'nt' else 'clear')
-        print(' -' * 50)
+        print("=" * 50)
+        print("=" * 10 + " PASSWORD MANAGER " + "=" * 10)
+        print("-" * 50)
+        print('Please follow the on screen guidelines to help you navigate through the application.')
         print("Welcome {}, you can type `exit` or `quit` when you are done".format("Guest User" if self.auth_user is None else self.auth_user.username))
-        print(' -' * 50)
+        print("=" * 50)
 
     def waitForKeypress(self):
         x = input("Press any key to continue: ")
@@ -89,6 +88,32 @@ class PasswordManager:
                     raise e
         else:
             self.waitForKeypress()
+
+    def doListPassword(self):
+        PAGE_SIZE = 10
+        master_pwd = getpass("Input your master password: ")
+        plain_passes: list[Password] = listPasswords(self.auth_user, master_pwd)
+        print("We found {} passwords for your account. ".format(len(plain_passes)))
+        
+        more_to_show = True 
+        i = 0
+        while i < len(plain_passes) and more_to_show:
+            print("Sl. No.\t|Name\t|Type\t|Description")
+            for j in range(i, min(i+PAGE_SIZE, len(plain_passes))):
+                print("{}:\t{}\t{}\t{}".format(
+                        j + 1,
+                        plain_passes[j].pwdname,
+                        plain_passes[j].pwdtype,
+                        plain_passes[j].description[:100] + "..."
+                ))
+            i += PAGE_SIZE
+            if i < len(plain_passes):
+                user_wants_more = input("Please 'y' to display more: ").lower()
+                if user_wants_more != "y":
+                    more_to_show = False
+
+        print("\n")
+        self.waitForKeypress()
 
         
     def doCreatePasswordAndStore(self):
@@ -177,7 +202,6 @@ class PasswordManager:
 
 
     def start(self):
-        self.showStartMessage()
 
         # This is the event loop
         while True:
@@ -186,7 +210,7 @@ class PasswordManager:
                 user_choice = self.showNavChoices(self.cur_menu)
                 if user_choice is not None:
                     if user_choice['action'] == 'quit':
-                        print('Good Bye!')
+                        print("Good Bye! [{}]".format(dt.datetime.now()))
                         break   # exit the application
                     elif user_choice['action'] == 'signup':
                         self.doSignUp()
@@ -201,6 +225,8 @@ class PasswordManager:
                         self.doEditPassword()
                     elif user_choice['action'] == "deletepass":
                         self.doDeletePassword()
+                    elif user_choice['action'] == "listpass":
+                        self.doListPassword()
                     elif user_choice['action'] == "logout":
                         self.auth_user = None
                         self.cur_menu = Config.NAV_MENU_PATHS

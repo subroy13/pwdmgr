@@ -4,5 +4,6 @@ from .api import (
     searchPassword,
     createPassword,
     editPassword,
-    deletePassword
+    deletePassword,
+    listPasswords
 )
