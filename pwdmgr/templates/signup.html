@@ -1,4 +1,5 @@
 {% extends '_base.html' %}
+{% from './macros/forms.html' import render_field %}
 
 {% block pagetitle %} 
     Sign up
@@ -47,6 +48,7 @@
     <div class="container text-center">
         <main class="form-signin w-100 m-auto">
         <form>
+            {% form.csrf_token %}
             <div class="mb-4">
                 <span>
                 <i class="fas fa-unlock-alt fa-2x"></i>
@@ -55,27 +57,10 @@
             </div>
             <h1 class="h3 mb-3 fw-normal">Please sign up for a new account</h1>
 
-            <div class="form-floating">
-            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-            <label for="floatingInput">Email address</label>
-            </div>
-
-            <div class="form-floating">
-            <input type="text" class="form-control" id="floatingInputEmail" placeholder="username">
-            <label for="floatingInputEmail">Username</label>
-            </div>
-
-
-            <div class="form-floating">
-            <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
-            <label for="floatingPassword">Password</label>
-            </div>
-            
-            <div class="form-floating">
-            <input type="password" class="form-control" id="floatingPasswordConfirm" placeholder="Confirm Password">
-            <label for="floatingPasswordConfirm">Confirm Password</label>
-            </div>
-
+            {{ render_field(form.useremail) }}
+            {{ render_field(form.username) }}
+            {{ render_field(form.password) }}
+            {{ render_field(form.confirm_password) }}
 
             <button class="w-100 btn btn-lg btn-primary" type="submit">Sign up</button>
             <p class="mt-5 mb-3 text-muted">&copy; 2017-2022</p>
