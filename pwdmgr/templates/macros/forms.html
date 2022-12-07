@@ -1,14 +1,14 @@
 {% macro render_field(field) %}
     <div class="form-floating">
         <!-- <input type="email" class="form-control" id="{{ field.id }}" placeholder="name@example.com"> -->
-        {{ field(class_ = "form-control", **kwargs)|safe }}
+        {{ field(class_ = "form-control my-1", **kwargs)|safe }}
         <label for="{{ field.id }}">{{ field.label }} 
             <span class="text-primary">{% if field.flags.required %} * {% endif %}</span>
         </label>
-        {% if field.errors %}
-        {% for error in field.errors %}
-            <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-        {% endif %}
+        <div class="invalid-feedback" id="{{ field.id }}-error">
+            {% if field.errors %}
+                {{ field.errors[0] }}
+            {% endif %}
+        </div>
     </div>
 {% endmacro %}

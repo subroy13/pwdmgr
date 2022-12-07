@@ -20,22 +20,22 @@
     background-color: #f5f5f5;
     }
 
-    .form-signin {
+    .form-container {
     max-width: 330px;
     padding: 15px;
     }
 
-    .form-signin .form-floating:focus-within {
+    .form-container .form-floating:focus-within {
     z-index: 2;
     }
 
-    .form-signin input[type="email"] {
+    .form-container input[type="email"] {
     margin-bottom: -1px;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
     }
 
-    .form-signin input[type="password"] {
+    .form-container input[type="password"] {
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
@@ -46,8 +46,8 @@
 
 {% block content %}
     <div class="container text-center">
-        <main class="form-signin w-100 m-auto">
-        <form>
+        <main class="form-container w-100 m-auto">
+        <form id = "form-signin">
             {{ form.csrf_token }}
             <div class="mb-4">
                 <span>
@@ -65,7 +65,7 @@
                     <input type="checkbox" value="remember-me"> Remember me
                 </label>
             </div>
-            <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+            <button class="w-100 btn btn-lg btn-primary" type="submit" id ="form-signin-submit">Sign in</button>
         </form>
         </main>
     </div>

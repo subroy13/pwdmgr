@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request, jsonify
 from . import app
 from .forms import UserSigninForm, UserSignupForm
 
@@ -11,6 +11,12 @@ def home():
 def login():
     return render_template('login.html', form = UserSigninForm())
 
-@app.route('/auth/signup/')
+@app.route('/auth/signup/', methods = ['GET', 'POST'])
 def signup():
-    return render_template('signup.html', form = UserSignupForm())
+    form = UserSignupForm()
+    if request.method == "POST":
+        if form.validate():
+            return jsonify({"data": form.data, "success": True})
+        return jsonify({ "errors": form.errors, "success": False }), 400
+
+    return render_template('signup.html', form = form)
