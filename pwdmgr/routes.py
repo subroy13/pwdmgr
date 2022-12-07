@@ -2,11 +2,15 @@ from flask import render_template, request, jsonify
 from . import app
 from .forms import UserSigninForm, UserSignupForm
 from .models import User
-from .api import createNewUser, getUser
+from .api.userapi import createNewUser, getUser
 
 @app.route("/")
 def home():
     return render_template('index.html')
+
+@app.route("/dashboard/")
+def dashboard():
+    return render_template('dashboard.html')
 
 
 @app.route('/auth/login/')

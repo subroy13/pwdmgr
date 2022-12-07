@@ -1,0 +1,53 @@
+{% extends '_base.html' %}
+
+{% block pagetitle %}
+Dashboard
+{% endblock %}
+
+{% block customcss %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container py-3 my-3">
+    <h1>Welcome USER</h1>
+    <p class="lead">Here are the list of your passwords.</p>
+    <div class="w-100">
+        <div class="d-flex flex-row-reverse mb-3">
+            <a href="#" class="btn btn-success">
+                <i class="fa fa-solid fa-plus"></i> Add new password
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">First</th>
+                        <th scope="col">Last</th>
+                        <th scope="col">Handle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>Mark</td>
+                        <td>Otto</td>
+                        <td>@mdo</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>Jacob</td>
+                        <td>Thornton</td>
+                        <td>@fat</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>    
+    </div>
+</div>
+{% endblock %}
+
+{% block customjs %}
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+{% endblock %}

@@ -1,8 +1,8 @@
 # This python files handles all the CRUD operations logic
 # It abstracts over the DB
-from .models import User
-from . import appdb
-from .config import Config
+from ..models import User
+from .. import appdb
+from ..config import Config
 
 def createNewUser(user: User):
     query = "INSERT INTO {}(userid, username, useremail, salt, password, createdat, lastmodifiedat, status)\
@@ -33,3 +33,14 @@ def getUser(username: str):
         user = User.convertToUser(rows[0])
         return user
 
+
+def getUserById(userid: str):
+    query = "SELECT userid, username, useremail, salt, password, createdat, lastmodifiedat, status\
+        FROM {} WHERE userid = $1 LIMIT 1;".format(Config.DB_USER_TABLE)
+    params = [userid]
+    rows = appdb.executeQuery(query, params, True)
+    if len(rows) == 0:
+        return None
+    else:
+        user = User.convertToUser(rows[0])
+        return user
