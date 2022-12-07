@@ -1,71 +1,57 @@
 {% extends '_base.html' %}
 {% from './macros/forms.html' import render_field %}
 
-{% block pagetitle %} 
-    Sign up
+{% block pagetitle %}
+Sign up
 {% endblock %}
 
 {% block customcss %}
 <style>
-    html,
-    body {
-    height: 100%;
-    }
-
-    body {
-    display: flex;
-    align-items: center;
-    padding-top: 40px;
-    padding-bottom: 40px;
-    background-color: #f5f5f5;
-    }
-
     .form-container {
-    max-width: 330px;
-    padding: 15px;
+        max-width: 330px;
+        padding: 15px;
     }
 
     .form-container .form-floating:focus-within {
-    z-index: 2;
+        z-index: 2;
     }
 
     .form-container input[type="email"] {
-    margin-bottom: -1px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
+        margin-bottom: -1px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
     }
 
     .form-container input[type="password"] {
-    margin-bottom: 10px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+        margin-bottom: 10px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
-
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="container text-center">
-        <main class="form-container w-100 m-auto">
-        <form id = "form-signup">
+<div class="container text-center">
+    <main class="form-container w-100 m-auto">
+        <form id="form-signup">
             {{ render_field(form.csrf_token) }}
             <div class="mb-4">
                 <span>
-                <i class="fas fa-unlock-alt fa-2x"></i>
-                <i class="fas fa-key" style="margin-left: -5px; font-size: small;"></i>
+                    <i class="fas fa-unlock-alt fa-2x"></i>
+                    <i class="fas fa-key" style="margin-left: -5px; font-size: small;"></i>
                 </span>
             </div>
-            <h1 class="h3 mb-3 fw-normal">Please sign up for a new account</h1>
+            <h1 class="h4 mb-3 fw-normal">Please sign up for a new account</h1>
 
             {{ render_field(form.useremail) }}
             {{ render_field(form.username) }}
             {{ render_field(form.password) }}
             {{ render_field(form.confirm_password) }}
 
-            <button class="w-100 btn btn-lg btn-primary" type="submit" id = "form-signup-submit">Sign up</button>
+            <button class="w-100 btn btn-lg btn-primary" type="submit" id="form-signup-submit">Sign up</button>
         </form>
-        </main>
-    </div>
+    </main>
+</div>
 {% endblock %}
 
 
@@ -80,7 +66,6 @@
                 error: document.getElementById(elem.id + "-error")
             }
         });
-        
 
         // select the signup form
         $('#form-signup-submit').click(async (e) => {
@@ -89,39 +74,56 @@
             // clear up the form
             Object.keys(formfields).forEach((key) => {
                 formfields[key].input.classList.remove('is-invalid');
-                formfields[key].error.innerHTML = "";
+                if (formfields[key].error) {
+                    formfields[key].error.innerHTML = "";
+                }
             });
 
             let body = JSON.stringify(Object.fromEntries(Object.entries(formfields).map(([k, v]) => {
                 return [k, v.input.value]
             })));
 
-            const response = await fetch('/auth/signup', {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body
-            });
+            try {
+                const response = await fetch('/auth/signup', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body
+                });
 
-            if (response.ok) {
-                console.log(response);
-            } else {
-                console.log(`Got error ${response.statusText} with code ${response.status}`);
-                const err_response = await response.json();
-                if (err_response.errors) {
-                    Object.keys(err_response.errors).forEach((key) => {
-                        formfields[key].input.classList.add('is-invalid');
-                        formfields[key].error.innerHTML = err_response.errors[key][0];
-                    });
-                } else {
-                    $.alert({
-                        title: 'Encountered an error!',
-                        content: 'Server side error, please contact support.',
-                        type: 'red',
-                        typeAnimated: true,
-                    });
+                const responsedata = await response.json();
+
+                // check based on response.status
+                switch(response.status) {
+                    case 200:
+                        console.log(responsedata);      // success
+                        break;
+                    case 400:
+                        Object.keys(responsedata.errors).forEach((key) => {
+                            formfields[key].input.classList.add('is-invalid');
+                            if (formfields[key].error) {
+                                formfields[key].error.innerHTML = responsedata.errors[key][0];
+                            }
+                        });
+                        break;
+                    default:
+                        $.alert({
+                            title: 'Encountered an error!',
+                            content: String(responsedata.errors),
+                            type: 'red',
+                            typeAnimated: true,
+                        });
+                        break;
                 }
+
+            } catch (err) {
+                $.alert({
+                    title: 'Encountered an error!',
+                    content: `Server side error :: ${String(err)}, please contact support.`,
+                    type: 'red',
+                    typeAnimated: true,
+                });
             }
         });
     });

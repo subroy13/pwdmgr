@@ -17,12 +17,22 @@
     <!-- Jquery confirm box -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
 
+    <!-- Base CSS Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'navbar.css') }}">
+
     {% block customcss %}{% endblock %}
 </head>
 <body>
 
     <div class="container-fluid">
-    {% block content %}{% endblock %}
+        <div class="d-flex h-100 w-100 text-center text-white bg-dark fullscreen-container">
+            <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+              {% include './macros/navbar.html' %}
+              {% block content %}{% endblock %}        
+              {% include './macros/footer.html' %}
+            </div>
+          </div>
     </div>
 
     <!-- Bootstrap JS -->

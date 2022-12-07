@@ -33,6 +33,14 @@ class User:
             self.password = None
         self.status = User.STATUS_ACTIVE
 
+    def serialize(self):
+        return {
+            "userid": self.id,
+            "username": self.username,
+            "useremail": self.useremail,
+            "status": self.status
+        }
+
 
     @classmethod
     def convertToUser(cls, dbuser):

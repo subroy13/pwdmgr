@@ -1,14 +1,16 @@
 {% macro render_field(field) %}
-    <div class="form-floating">
+    <div class="form-floating text-primary">
         <!-- <input type="email" class="form-control" id="{{ field.id }}" placeholder="name@example.com"> -->
         {{ field(class_ = "form-control my-1", **kwargs)|safe }}
-        <label for="{{ field.id }}">{{ field.label }} 
-            <span class="text-primary">{% if field.flags.required %} * {% endif %}</span>
-        </label>
-        <div class="invalid-feedback" id="{{ field.id }}-error">
-            {% if field.errors %}
-                {{ field.errors[0] }}
-            {% endif %}
-        </div>
+        {% if field.type != "CSRFTokenField" %}
+            <label for="{{ field.id }}">{{ field.label }} 
+                <span class="text-primary">{% if field.flags.required %} * {% endif %}</span>
+            </label>
+            <div class="invalid-feedback" id="{{ field.id }}-error">
+                {% if field.errors %}
+                    {{ field.errors[0] }}
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
