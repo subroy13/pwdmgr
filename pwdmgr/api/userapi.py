@@ -17,8 +17,7 @@ def createNewUser(user: User):
         user.lastmodified_at,
         user.status
     ]
-    rows = appdb.executeQuery(query, params, True)
-    assert len(rows) > 0
+    rows = appdb.executeQuery(query, params, False)
     return user.serialize()
 
 

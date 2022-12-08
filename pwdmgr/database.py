@@ -10,6 +10,7 @@ class Database:
     def getConnection(self):
         try:
             con = sqlite3.connect(self.dbpath)
+            con.row_factory = sqlite3.Row
             return con
         except Exception as e:
             print(e)

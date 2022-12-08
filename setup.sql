@@ -4,7 +4,7 @@ CREATE TABLE "users" (
     useremail VARCHAR(255) NOT NULL,
     salt VARCHAR NOT NULL,
     password VARCHAR NOT NULL,
-    createat BIGINT NOT NULL,
+    createdat BIGINT NOT NULL,
     lastmodifiedat BIGINT NOT NULL,
     status INT NOT NULL DEFAULT 0
 );
@@ -16,7 +16,7 @@ CREATE TABLE "passwords" (
     description VARCHAR NULL,
     sensitiveinfo VARCHAR NULL,
     userid VARCHAR(32) NOT NULL,
-    createat BIGINT NOT NULL,
+    createdat BIGINT NOT NULL,
     lastmodifiedat BIGINT NOT NULL,
 
     FOREIGN KEY (userid) REFERENCES "users"(userid)

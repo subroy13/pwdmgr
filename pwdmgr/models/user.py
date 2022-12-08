@@ -76,7 +76,7 @@ class User:
     def verify_password_crypt(self, password: str):
         kdf = Scrypt(self.salt.encode(Config.BYTES_ENCODING), 32, n = 2**14, r = 8, p = 1)
         try:
-            crypt64bytes = self.password_crypt.encode(Config.BYTES_ENCODING)
+            crypt64bytes = self.password.encode(Config.BYTES_ENCODING)
             kdf.verify(password.encode(Config.BYTES_ENCODING), base64.b64decode(crypt64bytes))
             return True
         except Exception as e:
