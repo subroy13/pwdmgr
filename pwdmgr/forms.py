@@ -21,7 +21,7 @@ class CreatePasswordForm(FlaskForm):
     pwdtype = StringField('Password Group', validators=[InputRequired()])
     description = TextAreaField('Description', validators=[Optional()])
     sensitiveinfo = TextAreaField('Password Information', validators=[InputRequired()])
-    master_pwd = PasswordField('Master Password', validators=[InputRequired()])
+    masterpwd = PasswordField('Master Password', validators=[InputRequired()])
 
 
 class EditPasswordForm(FlaskForm):
@@ -30,5 +30,5 @@ class EditPasswordForm(FlaskForm):
     pwdtype = StringField('Password Group', validators=[InputRequired()])
     description = TextAreaField('Description', validators=[Optional()])
     sensitiveinfo = TextAreaField('Password Information', validators=[InputRequired()])
-    master_pwd = PasswordField('Master Password', validators=[InputRequired()])
+    masterpwd = PasswordField('Master Password', validators=[InputRequired()])
 

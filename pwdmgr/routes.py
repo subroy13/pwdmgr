@@ -1,8 +1,10 @@
+import json
 from flask import render_template, request, jsonify, session, redirect, url_for
 from . import app
 from .forms import UserSigninForm, UserSignupForm, CreatePasswordForm, EditPasswordForm
-from .models import User
+from .models import User, Password
 from .api.userapi import createNewUser, getUser, getUserById
+from .api.passapi import createNewPassword
 
 @app.route("/")
 def home():
@@ -36,11 +38,11 @@ def login():
                 # get the user by username
                 user = getUser(form.username.data)
                 if user is None:
-                    return jsonify({"errors": "The specified username does not exist!"}), 404
+                    return jsonify({"errors": {"username": ["The specified username does not exist!"]}}), 400
                 
                 # verify the password
                 if not user.verify_password_crypt(form.password.data):
-                    return jsonify({ "errors": "Invalid credentials!" }), 401
+                    return jsonify({ "errors": {"password": ["Invalid credentials!"]} }), 400
                 
                 # if everything is correct, return the user and set session data
                 session['loggedinuserid'] = user.id
@@ -75,16 +77,29 @@ def signup():
     return render_template('signup.html', form = form, user = None)
 
 
-@app.route('/password/create', methods = ['GET', 'POST'])
-def create_password():
+@app.route('/password/add', methods = ['GET', 'POST'])
+def add_password():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
         form = CreatePasswordForm()
         if request.method == "POST":
             if form.validate():
                 try: 
-                    # TODO: create new password
-                    return jsonify({"data": ""}), 200
+                    # try parsing the json sensitive info
+                    try:
+                        jsoninfo = json.loads(form.sensitiveinfo.data)
+                    except Exception as e:
+                        return jsonify({"errors": {"sensitiveinfo": ["Must be valid json string"]} }), 400
+                    
+                    # verify master password
+                    try:
+                        master_key = user.generateMasterKey(form.masterpwd.data)
+                    except Exception as e:
+                        return jsonify({"errprs": {"masterpwd": ["Invalid master password"]} }), 400
+
+                    pwd = Password(form.pwdname.data, form.pwdtype.data, user, form.description.data, jsoninfo)
+                    pwddata = createNewPassword(pwd)
+                    return jsonify({"data": pwddata}), 200
                 except Exception as e:
                     print(e)
                     return jsonify({"errors": str(e)}), 500

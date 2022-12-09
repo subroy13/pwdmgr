@@ -2,7 +2,7 @@
     <div class="form-floating text-primary">
         <!-- <input type="email" class="form-control" id="{{ field.id }}" placeholder="name@example.com"> -->
         {{ field(class_ = "form-control my-1", **kwargs)|safe }}
-        {% if field.type != "CSRFTokenField" && field.type != "HiddenField" %}
+        {% if field.type != "CSRFTokenField" and field.type != "HiddenField" %}
             <label for="{{ field.id }}">{{ field.label }} 
                 <span class="text-primary">{% if field.flags.required %} * {% endif %}</span>
             </label>

@@ -40,6 +40,14 @@ class Password:
         self.__checkValidProp(self.pwdtype, "Type")
         self.__checkValidProp(self.description, "Description")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.pwdname,
+            "type": self.pwdtype,
+            "description": self.description
+        }
+
     @classmethod
     def convertToPassword(cls, dbpass):
         # convert the user saved in db to a proper user object
