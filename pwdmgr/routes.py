@@ -1,7 +1,14 @@
 import json
 from flask import render_template, request, jsonify, session, redirect, url_for
 from . import app
-from .forms import UserSigninForm, UserSignupForm, CreatePasswordForm, EditPasswordForm
+from .forms import (
+    UserSigninForm, 
+    UserSignupForm, 
+    CreatePasswordForm, 
+    EditPasswordForm,
+    ViewPasswordForm,
+    DeletePasswordForm
+)
 from .models import User, Password
 from .api.userapi import createNewUser, getUser, getUserById
 from .api.passapi import createNewPassword, listAllPasswords
@@ -17,7 +24,14 @@ def dashboard():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
         pwdlist = listAllPasswords(user)
-        return render_template('dashboard.html', pwdlist = pwdlist, user = user)
+        viewform = ViewPasswordForm()
+        delform = DeletePasswordForm()
+        return render_template('dashboard.html', 
+            pwdlist = pwdlist, 
+            user = user, 
+            viewform = viewform,
+            delform = delform
+        )
     return redirect(url_for('home'))
 
 
@@ -116,7 +130,9 @@ def edit_password():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
         form = EditPasswordForm()
-        return redirect(url_for('dashboard'))   # TODO
+        if form.validate():
+            pass 
+        return jsonify({ "errors": form.errors }), 400
     return redirect(url_for('home'))
 
 
@@ -124,5 +140,19 @@ def edit_password():
 def delete_password():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
-        return redirect(url_for('dashboard'))   # TODO
+        form = DeletePasswordForm()
+        if form.validate():
+            pass 
+        return jsonify({ "errors": form.errors }), 400
     return redirect(url_for('home'))
+
+@app.route('/password/view', methods = ['POST'])
+def view_password():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        form = ViewPasswordForm()
+        if form.validate():
+            pass # TODO: return the json data
+        return jsonify({ "errors": form.errors }), 400
+    return redirect(url_for('home'))
+

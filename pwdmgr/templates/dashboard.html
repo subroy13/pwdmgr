@@ -1,4 +1,5 @@
 {% extends '_base.html' %}
+{% from './macros/forms.html' import render_field %}
 
 {% block pagetitle %}
 Dashboard
@@ -54,55 +55,68 @@ Dashboard
                             <td>{{ pwd.type }}</td>
                             <td class="description-col">{{ pwd.description }}</td>
                             <td class="d-flex justify-content-around">
-                                <button class="btn btn-primary mx-1" data-bs-toggle="modal" data-bs-target="#{{ pwd.id }}-view-modal"><i class="fa fa-solid fa-eye"></i></button>
-                                <button class="btn btn-warning mx-1 edit-password-btn" id-value="{{ pwd.id }}" name-value="{{ pwd.name }}"><i class="fa fa-solid fa-pen"></i></button>
-                                <button class="btn btn-danger mx-1 delete-password-btn" data-bs-toggle="modal" data-bs-target="#{{ pwd.id }}-delete-modal"><i class="fa fa-solid fa-trash"></i></button>                                
+                                <button class="btn btn-primary mx-1 password-view-modal-btn" data-id-value="{{ pwd.id }}" data-bs-toggle="modal"><i class="fa fa-solid fa-eye"></i></button>
+                                <button class="btn btn-warning mx-1 edit-password-btn" data-id-value="{{ pwd.id }}" data-name-value="{{ pwd.name }}"><i class="fa fa-solid fa-pen"></i></button>
+                                <button class="btn btn-danger mx-1 password-delete-modal-btn" id-value="{{ pwd.id }}" data-bs-toggle="modal"><i class="fa fa-solid fa-trash"></i></button>                                
                             </td>
-                            
-                            <!-- Modal View -->
-                            <div class="modal fade" id="{{ pwd.id }}-view-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="{{ pwd.id }}-view-label" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content bg-dark text-light border">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="{{ pwd.id }}-view-label">View password</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <!-- TODO -->
-                                            ...
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Modal Delete -->
-                            <div class="modal fade" id="{{ pwd.id }}-delete-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="{{ pwd.id }}-delete-label" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content bg-dark text-light border">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="{{ pwd.id }}-delete-label">Delete password</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p class="fw-bold text-danger">Are you sure you want to delete the password '{{ pwd.name }}'?</p>                                            
-                                            <!-- TODO -->
-                                            ...
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>    
+
+        <!-- Modal View -->
+        <div class="modal hide fade" id="password-view-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="password-view-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content border text-dark">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="password-view-label">View password</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="lead">Please enter your master password to view.</p>
+                        <form id="form-password-view">
+                            {{ render_field(viewform.csrf_token) }}
+                            {{ render_field(viewform.viewpwdid) }}
+                            {{ render_field(viewform.viewmasterpwd) }}
+                            <button class="w-100 btn btn-lg btn-secondary" type="submit" id="form-password-view-submit">View Password Details</button>
+                        </form>
+                        <div class="w-100 m-3 password-view-area border border-rounded">
+                        </div>                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Delete -->
+        <div class="modal hide fade" id="password-delete-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="password-delete-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content border text-dark">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="password-delete-label">Delete password</h1>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="lead text-danger">Please enter your master password to confirm delete.</p>
+                        <form id="form-password-delete">
+                            {{ render_field(delform.csrf_token) }}
+                            {{ render_field(delform.delpwdid) }}
+                            {{ render_field(delform.delmasterpwd) }}
+                            <button class="w-100 btn btn-lg btn-secondary" type="submit" id="form-password-delete-submit">Delete Password</button>
+                        </form>
+                        <div class="w-100 m-3 password-view-area border border-rounded">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
     </div>
 </div>
 {% endblock %}
@@ -112,6 +126,35 @@ Dashboard
 
 <script>
     $(document).ready(() => {
+        // view model form elements
+        var viewformfields = {
+            csrf_token: {
+                input: document.getElementById('#form-password-view #csrf_token')
+            },
+            viewpwdid: {
+                input: document.getElementById('#form-password-view #viewpwdid')
+            },
+            viewmasterpwd: {
+                input: document.getElementById('#form-password-view #viewmasterpwd'),
+                error: document.getElementById('#form-password-view #viewmasterpwd-error')
+            }
+        };
+
+        // delete modal form elements
+        var delformfields = {
+            csrf_token: {
+                input: document.getElementById('#form-password-delete #csrf_token')
+            },
+            delpwdid: {
+                input: document.getElementById('#form-password-delete #viewpwdid')
+            },
+            delmasterpwd: {
+                input: document.getElementById('#form-password-delete #viewmasterpwd'),
+                error: document.getElementById('#form-password-delete #viewmasterpwd-error')
+            }
+        }
+
+
         $('#password-list').dataTable({
             "columns": [
                 null,
@@ -124,8 +167,9 @@ Dashboard
 
         $('.edit-password-btn').click((e) => {
             e.preventDefault();
-            var pwdid = $(this).attr('id-value');
-            var pwdname = $(this).attr('name-value');
+            var pwdid = $(e.target).attr('data-id-value');
+            var pwdname = $(e.target).attr('data-name-value');
+            console.log($(e.target));
 
             $.confirm({
                 title: 'Edit Password',
@@ -140,6 +184,140 @@ Dashboard
                 }
             });
         });
+
+        $('.password-view-modal-btn').click((e) => {
+            e.preventDefault();
+            var pwdid = $(this).attr('id-value');
+            $('#viewpwdid').val(pwdid);
+            $('#password-view-modal').modal('show');
+
+            $('#form-password-view-submit').click(async (e2) => {
+                e2.preventDefault();
+
+                // clear up the form
+                Object.keys(viewformfields).forEach((key) => {
+                    viewformfields[key].input.classList.remove('is-invalid');
+                    if (viewformfields[key].error) {
+                        viewformfields[key].error.innerHTML = "";
+                    }
+                });
+
+                let viewbody = JSON.stringify(Object.fromEntries(Object.entries(viewformfields).map(([k, v]) => {
+                    return [k, v.input.value]
+                })));
+
+                try {
+                    const response = await fetch("{{ url_for('view_password') }}", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        viewbody
+                    });
+                    const responsedata = await response.json();
+
+                    // check based on response.status
+                    switch(response.status) {
+                        case 200:
+                            console.log(responsedata);      // success
+                            break;
+                        case 400:
+                            Object.keys(responsedata.errors).forEach((key) => {
+                                viewformfields[key].input.classList.add('is-invalid');
+                                if (viewformfields[key].error) {
+                                    viewformfields[key].error.innerHTML = responsedata.errors[key][0];
+                                }
+                            });
+                            break;
+                        default:
+                            $.alert({
+                                title: 'Encountered an error!',
+                                content: String(responsedata.errors),
+                                type: 'red',
+                                typeAnimated: true,
+                            });
+                            break;
+                    }
+                } catch (err) {
+                    $.alert({
+                        title: 'Encountered an error!',
+                        content: `Server side error :: ${String(err)}, please contact support.`,
+                        type: 'red',
+                        typeAnimated: true,
+                    });
+                }
+
+
+            });
+
+        });
+
+        $('.password-delete-modal-btn').click((e) => {
+            e.preventDefault();
+            var pwdid = $(this).attr('id-value');
+            $('#password-delete-modal').modal('show');
+
+            $('#form-password-delete-submit').click(async (e2) => {
+                e2.preventDefault();
+
+                // clear up the form
+                Object.keys(delformfields).forEach((key) => {
+                    delformfields[key].input.classList.remove('is-invalid');
+                    if (delformfields[key].error) {
+                        delformfields[key].error.innerHTML = "";
+                    }
+                });
+
+                let delbody = JSON.stringify(Object.fromEntries(Object.entries(delformfields).map(([k, v]) => {
+                    return [k, v.input.value]
+                })));
+
+                try {
+                    const response = await fetch("{{ url_for('delete_password') }}", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        delbody
+                    });
+                    const responsedata = await response.json();
+
+                    // check based on response.status
+                    switch(response.status) {
+                        case 200:
+                            console.log(responsedata);      // success
+                            break;
+                        case 400:
+                            Object.keys(responsedata.errors).forEach((key) => {
+                                delformfields[key].input.classList.add('is-invalid');
+                                if (delformfields[key].error) {
+                                    delformfields[key].error.innerHTML = responsedata.errors[key][0];
+                                }
+                            });
+                            break;
+                        default:
+                            $.alert({
+                                title: 'Encountered an error!',
+                                content: String(responsedata.errors),
+                                type: 'red',
+                                typeAnimated: true,
+                            });
+                            break;
+                    }
+                } catch (err) {
+                    $.alert({
+                        title: 'Encountered an error!',
+                        content: `Server side error :: ${String(err)}, please contact support.`,
+                        type: 'red',
+                        typeAnimated: true,
+                    });
+                }
+
+
+            });
+            
+        });
+
 
     });
 </script>

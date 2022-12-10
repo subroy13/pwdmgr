@@ -1,8 +1,6 @@
-import json
 from flask_wtf import FlaskForm
 from wtforms import StringField, EmailField, PasswordField, TextAreaField, HiddenField
 from wtforms.validators import InputRequired, EqualTo, Length, Optional
-from wtforms.widgets import TextArea
 
 class UserSignupForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min = 3, max = 15)])
@@ -32,3 +30,10 @@ class EditPasswordForm(FlaskForm):
     sensitiveinfo = TextAreaField('Password Information', validators=[InputRequired()])
     masterpwd = PasswordField('Master Password', validators=[InputRequired()])
 
+class ViewPasswordForm(FlaskForm):
+    viewpwdid = HiddenField('Password Id', validators=[InputRequired()])
+    viewmasterpwd = PasswordField('Master Password', validators=[InputRequired()])
+
+class DeletePasswordForm(FlaskForm):
+    delpwdid = HiddenField('Password Id', validators=[InputRequired()])
+    delmasterpwd = PasswordField('Master Password', validators=[InputRequired()])
