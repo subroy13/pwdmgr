@@ -4,7 +4,7 @@ from . import app
 from .forms import UserSigninForm, UserSignupForm, CreatePasswordForm, EditPasswordForm
 from .models import User, Password
 from .api.userapi import createNewUser, getUser, getUserById
-from .api.passapi import createNewPassword
+from .api.passapi import createNewPassword, listAllPasswords
 
 @app.route("/")
 def home():
@@ -16,7 +16,8 @@ def home():
 def dashboard():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
-        return render_template('dashboard.html', user = user)
+        pwdlist = listAllPasswords(user)
+        return render_template('dashboard.html', pwdlist = pwdlist, user = user)
     return redirect(url_for('home'))
 
 
@@ -97,7 +98,8 @@ def add_password():
                     except Exception as e:
                         return jsonify({"errprs": {"masterpwd": ["Invalid master password"]} }), 400
 
-                    pwd = Password(form.pwdname.data, form.pwdtype.data, user, form.description.data, jsoninfo)
+                    pwd = Password(form.pwdname.data, form.pwdtype.data, user, form.description.data)
+                    pwd.addSensitiveInfo(master_key, jsoninfo)
                     pwddata = createNewPassword(pwd)
                     return jsonify({"data": pwddata}), 200
                 except Exception as e:
@@ -106,4 +108,21 @@ def add_password():
             return jsonify({ "errors": form.errors }), 400
 
         return render_template('add_password.html', form = form, user = user)
+    return redirect(url_for('home'))
+
+
+@app.route('/password/edit', methods = ['GET', 'POST'])
+def edit_password():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        form = EditPasswordForm()
+        return redirect(url_for('dashboard'))   # TODO
+    return redirect(url_for('home'))
+
+
+@app.route('/password/delete', methods = ['POST'])
+def delete_password():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        return redirect(url_for('dashboard'))   # TODO
     return redirect(url_for('home'))

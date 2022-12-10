@@ -23,8 +23,7 @@ class Password:
         pwdname: str,
         pwdtype: str,
         user: User,
-        description: str = None,
-        sensitiveinfo: dict = {}
+        description: str = None
     ):
         # create a new password object
         self.id = uuid.uuid4().hex
@@ -32,13 +31,15 @@ class Password:
         self.pwdtype = pwdtype
         self.description = description if description is not None else pwdname
         self.auth_user = user
-        self.created_at = self.__processDateTime()
-        self.lastmodified_at = self.__processDateTime()
-        master_key = user.generateMasterKey()
-        self.sensitiveinfo = self.__encrypt(master_key, sensitiveinfo)  # only store the encrypted information
+        self.created_at = self.__processDateTime(None)
+        self.lastmodified_at = self.__processDateTime(None)
         self.__checkValidProp(self.pwdname, "Name")
         self.__checkValidProp(self.pwdtype, "Type")
         self.__checkValidProp(self.description, "Description")
+
+    def addSensitiveInfo(self, masterkey: bytes, sensitiveinfo: dict = {}):
+        self.sensitiveinfo = self.__encrypt(masterkey, sensitiveinfo)
+
 
     def serialize(self):
         return {
