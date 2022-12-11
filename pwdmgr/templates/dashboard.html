@@ -15,19 +15,11 @@ Dashboard
         text-overflow: ellipsis;
     }
 
-    #password-list_length select {
-        color: white;
-    }
-
-    #password-list_length option {
-        color: black;
-    }
-
     .password-view-area {
         height: 200px;
         overflow: scroll;
     }
-
+    
 </style>
 {% endblock %}
 
@@ -42,7 +34,7 @@ Dashboard
             </a>
         </div>
         <div class="table-responsive">
-            <table class="table table-dark table-bordered table-striped table-hover" id="password-list">
+            <table class="table table-bordered table-striped table-hover" id="password-list">
                 <thead>
                     <tr>
                         <th scope="col">Serial</th>
@@ -183,7 +175,7 @@ Dashboard
             $('#viewpwdid').val(pwdid);
             $('#password-view-modal').modal('show');
 
-            $('#form-password-view-submit').click(async function(e2) {
+            $('#form-password-view-submit').click(function(e2) {
                 e2.preventDefault();
 
                 // clear up the form
@@ -207,7 +199,6 @@ Dashboard
                     success: function(responsedata) {
                         console.log(responsedata.data);
                         $('.password-view-area').val(JSON.stringify(responsedata.data, null, "\t"));
-                        //$('#password-view-modal').modal('hide');
                     },
                     error: function(err) {
 
@@ -239,6 +230,7 @@ Dashboard
         $('.password-delete-modal-btn').click(function (e) {
             e.preventDefault();
             var pwdid = $(this).attr('id-value');
+            $('#delpwdid').val(pwdid);
             $('#password-delete-modal').modal('show');
 
             $('#form-password-delete-submit').click(async function(e2) {
@@ -256,48 +248,50 @@ Dashboard
                     return [k, v.input.value]
                 })));
 
-                try {
-                    const response = await fetch("{{ url_for('delete_password') }}", {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        delbody
-                    });
-                    const responsedata = await response.json();
-
-                    // check based on response.status
-                    switch(response.status) {
-                        case 200:
-                            console.log(responsedata);      // success
-                            break;
-                        case 400:
-                            Object.keys(responsedata.errors).forEach((key) => {
-                                delformfields[key].input.classList.add('is-invalid');
-                                if (delformfields[key].error) {
-                                    delformfields[key].error.innerHTML = responsedata.errors[key][0];
+                $.ajax({
+                    type: "POST",
+                    url: "{{ url_for('delete_password') }}",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: delbody,
+                    success: function(responsedata) {
+                        console.log(responsedata.data);
+                        $.alert({
+                            title: 'Password Deleted',
+                            content: `Password '${responsedata.data.name}' deleted successfully`,
+                            type: 'orange',
+                            typeAnimated: true,
+                            buttons: {
+                                Ok: function() {
+                                    window.location.replace("{{ url_for('dashboard') }}")
                                 }
-                            });
-                            break;
-                        default:
-                            $.alert({
-                                title: 'Encountered an error!',
-                                content: String(responsedata.errors),
-                                type: 'red',
-                                typeAnimated: true,
-                            });
-                            break;
+                            }
+                        });
+                    },
+                    error: function(err) {
+                        console.log(err);
+                        console.log(delformfields);
+                        const responsedata = err.responseJSON;
+                        switch(err.status) {
+                            case 400:
+                                Object.keys(responsedata.errors).forEach((key) => {
+                                    delformfields[key].input.classList.add('is-invalid');
+                                    if (delformfields[key].error) {
+                                        delformfields[key].error.innerHTML = responsedata.errors[key][0];
+                                    }
+                                });
+                                break;
+                            default:
+                                $.alert({
+                                    title: 'Encountered an error!',
+                                    content: JSON.stringify(responsedata.errors ?? responsedata),
+                                    type: 'red',
+                                    typeAnimated: true,
+                                });
+                                break;
+                        }
                     }
-                } catch (err) {
-                    $.alert({
-                        title: 'Encountered an error!',
-                        content: `Server side error :: ${String(err)}, please contact support.`,
-                        type: 'red',
-                        typeAnimated: true,
-                    });
-                }
-
-
+                });
             });
             
         });

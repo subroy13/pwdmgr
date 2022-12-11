@@ -17,11 +17,16 @@
 
 
 {% block content %}
-<main class="px-3">
-  <h1>Password Manager</h1>
-  <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
-  <p class="lead">
-    <a href="{{ url_for('login') }}" class="btn btn-lg btn-secondary fw-bold border-white bg-white">Login</a>
-    <a href="{{ url_for('signup') }}" class="btn btn-lg btn-secondary fw-bold border-white bg-white ml-3">Signup</a>        </p>
+<main class="w-100 h-100 px-3 d-flex flex-column justify-content-center align-items-center">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h1>Password Manager</h1>
+            <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
+            <p class="lead">
+              <a href="{{ url_for('login') }}" class="btn btn-lg btn-secondary text-white fw-bold">Login</a>
+              <a href="{{ url_for('signup') }}" class="btn btn-lg btn-secondary text-light fw-bold ml-3">Signup</a>        
+            </p>          
+        </div>
+    </div>
 </main>
 {% endblock %}

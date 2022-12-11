@@ -1,31 +1,43 @@
-<header class="mb-auto">
-    <div>
-        <h3 class="float-md-start mb-0">
-            <span>
-                <i class="fas fa-unlock-alt"></i>
-                <i class="fas fa-key" style="margin-left: -5px; font-size: small;"></i>
-            </span>
-            PwdMgr
-        </h3>
-        <nav class="nav nav-masthead justify-content-center float-md-end">
-            <div style="margin-right: 1rem;">
-                <p class="fw-bold py-1 px-0">Welcome, 
-                    {% if user %}
-                        {{ user.username }}
-                    {% else %}
-                        Guest User
-                    {% endif %}
-                    |
-                </p>
-            </div>
-    
-            <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="{{ url_for('home') }}">Home</a>
-            {% if user %}
-                <a class="nav-link fw-bold py-1 px-0" href="{{ url_for('logout') }}">Logout</a>
-            {% else %}
-                <a class="nav-link fw-bold py-1 px-0" href="{{ url_for('login') }}">Login</a>
-                <a class="nav-link fw-bold py-1 px-0" href="{{ url_for('signup') }}">Signup</a>
-            {% endif %}
-        </nav>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}">
+        <span>
+            <i class="fas fa-unlock-alt"></i>
+            <i class="fas fa-key" style="margin-left: -5px; font-size: small;"></i>
+        </span>
+        PwdMgr
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse bg-light ml-3 mr-3 rounded" id="navbarTogglerDemo02">
+        <div class="w-100 d-flex flex-row justify-content-end align-items-center">
+            <p class="fw-bold py-1 px-0 mb-2 mb-lg-0 mr-4">Welcome, 
+                {% if user %}
+                    {{ user.username }}
+                {% else %}
+                    Guest User
+                {% endif %}
+                |
+            </p>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
+                </li>
+                {% if user %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('signup') }}">Signup</a>
+                    </li>
+                {% endif %}
+            </ul>      
+        </div>
+      </div>
     </div>
-</header>
+</nav>

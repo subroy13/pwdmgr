@@ -63,7 +63,7 @@ Login
         });
 
         // select the signup form
-        $('#form-signin-submit').click(async function(e) {
+        $('#form-signin-submit').click(function(e) {
             e.preventDefault();
 
             // clear up the form
@@ -78,47 +78,38 @@ Login
                 return [k, v.input.value]
             })));
 
-            try {
-                const response = await fetch("{{ url_for('login') }}", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body
-                });
-                const responsedata = await response.json();
-
-                // check based on response.status
-                switch(response.status) {
-                    case 200:
-                        console.log(responsedata);      // success
-                        window.location.replace("{{ url_for('dashboard') }}");
-                        break;
-                    case 400:
-                        Object.keys(responsedata.errors).forEach((key) => {
-                            formfields[key].input.classList.add('is-invalid');
-                            if (formfields[key].error) {
-                                formfields[key].error.innerHTML = responsedata.errors[key][0];
-                            }
-                        });
-                        break;
-                    default:
-                        $.alert({
-                            title: 'Encountered an error!',
-                            content: String(responsedata.errors),
-                            type: 'red',
-                            typeAnimated: true,
-                        });
-                        break;
+            $.ajax({
+                url: "{{ url_for('login') }}",
+                method: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                data: body,
+                success: function(responsedata) {
+                    console.log(responsedata);      // success
+                    window.location.replace("{{ url_for('dashboard') }}");
+                },
+                error: function(err) {
+                    const responsedata = err.responseJSON;
+                    switch(err.status) {
+                        case 400:
+                            Object.keys(responsedata.errors).forEach((key) => {
+                                formfields[key].input.classList.add('is-invalid');
+                                if (formfields[key].error) {
+                                    formfields[key].error.innerHTML = responsedata.errors[key][0];
+                                }
+                            });
+                            break;
+                        default:
+                            $.alert({
+                                title: 'Encountered an error!',
+                                content: String(responsedata.errors),
+                                type: 'red',
+                                typeAnimated: true,
+                            });
+                            break;
+                    }
                 }
-            } catch (err) {
-                $.alert({
-                    title: 'Encountered an error!',
-                    content: `Server side error :: ${String(err)}, please contact support.`,
-                    type: 'red',
-                    typeAnimated: true,
-                });
-            }
+            });
         });
     });
 </script>

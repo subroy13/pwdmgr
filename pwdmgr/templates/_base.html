@@ -19,19 +19,18 @@
 
     <!-- Base CSS Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename = 'main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename = 'navbar.css') }}">
 
     {% block customcss %}{% endblock %}
 </head>
 <body>
 
     <div class="container-fluid">
-        <div class="d-flex h-100 w-100 text-center text-white bg-dark fullscreen-container">
-            <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-              {% include './macros/navbar.html' %}
+        <div class="h-100 w-100 text-center fullscreen-container">
+            {% include './macros/navbar.html' %}
+            <div class="cover-container w-100 h-100 p-3 mx-auto">
               {% block content %}{% endblock %}        
-              {% include './macros/footer.html' %}
             </div>
+            {% include './macros/footer.html' %}
           </div>
     </div>
 

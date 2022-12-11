@@ -45,15 +45,15 @@ def getPasswordById(pwdid: str):
 
 
 def updatePassword(pwd: Password):
-    query = "UPDATE {} SET type = $1, description = $2, sensitiveinfo = $3, lastmodifiedat = $4 WHERE pwdid = $5;".format(Config.DB_PWD_TABLE)
-    params = [pwd.pwdtype, pwd.description, pwd.sensitiveinfo, pwd.lastmodified_at, pwd.id]
+    query = "UPDATE {} SET type = $1, description = $2, lastmodifiedat = $4 WHERE pwdid = $5;".format(Config.DB_PWD_TABLE)
+    params = [pwd.pwdtype, pwd.description, pwd.lastmodified_at, pwd.id]
     rows = appdb.executeQuery(query, params, False)
     return pwd.serialize()
 
 def deletePassword(pwdid: str):
     query = "DELETE FROM {} WHERE pwdid = $1;".format(Config.DB_PWD_TABLE)
     params = [pwdid]
-    rows = appdb.executeQuery(query, params, True)
+    rows = appdb.executeQuery(query, params, False)
     return rows
 
 
