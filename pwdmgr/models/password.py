@@ -102,3 +102,8 @@ class Password:
         f = Fernet(master_key)
         decrypt_string = f.decrypt(msg.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
         return self.__base64decode(decrypt_string)
+
+    def decryptSensitiveInfo(self, master_key: bytes):
+        return self.__decrypt(master_key, self.sensitiveinfo)
+
+

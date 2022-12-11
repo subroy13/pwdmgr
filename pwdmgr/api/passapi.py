@@ -3,6 +3,7 @@
 from ..models import Password, User
 from .. import appdb
 from ..config import Config
+from .userapi import getUserById
 
 def createNewPassword(pwd: Password):
     query = "INSERT INTO {}(pwdid, name, type, description, sensitiveinfo, userid, createdat, lastmodifiedat)\
@@ -26,6 +27,23 @@ def listAllPasswords(user: User):
     rows = appdb.executeQuery(query, params, True)
     return [{"id": row['pwdid'], "name": row['name'], "type": row['type'], "description": row['description']} for row in rows]
 
+def getPasswordById(pwdid: str):
+    query = "SELECT pwdid, name, type, description, sensitiveinfo, userid FROM {} WHERE pwdid = $1 LIMIT 1;".format(Config.DB_PWD_TABLE)
+    params = [pwdid]
+    rows = appdb.executeQuery(query, params, True)
+    if len(rows) == 0:
+        return None
+    else:
+        user = getUserById(rows[0]['userid'])
+        if user is None:
+            return None
+        else:
+            pwd = Password(rows[0]['name'], rows[0]['type'], user, rows[0]['description'])
+            pwd.id = rows[0]['pwdid']
+            pwd.sensitiveinfo = rows[0]['sensitiveinfo']
+            return pwd
+
+
 def updatePassword(pwd: Password):
     query = "UPDATE {} SET type = $1, description = $2, sensitiveinfo = $3, lastmodifiedat = $4 WHERE pwdid = $5;".format(Config.DB_PWD_TABLE)
     params = [pwd.pwdtype, pwd.description, pwd.sensitiveinfo, pwd.lastmodified_at, pwd.id]
@@ -38,3 +56,11 @@ def deletePassword(pwdid: str):
     rows = appdb.executeQuery(query, params, True)
     return rows
 
+
+def viewPassword(pwdid: str, master_pwd: str):
+    try:
+        pwd = getPasswordById(pwdid)
+        master_key = pwd.auth_user.generateMasterKey(master_pwd)
+        return pwd.decryptSensitiveInfo(master_key)
+    except Exception as e:
+        return None

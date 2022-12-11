@@ -23,6 +23,11 @@ Dashboard
         color: black;
     }
 
+    .password-view-area {
+        height: 200px;
+        overflow: scroll;
+    }
+
 </style>
 {% endblock %}
 
@@ -79,10 +84,10 @@ Dashboard
                             {{ render_field(viewform.csrf_token) }}
                             {{ render_field(viewform.viewpwdid) }}
                             {{ render_field(viewform.viewmasterpwd) }}
-                            <button class="w-100 btn btn-lg btn-secondary" type="submit" id="form-password-view-submit">View Password Details</button>
+                            <button class="btn btn-primary" type="submit" id="form-password-view-submit">View Password Details</button>
                         </form>
-                        <div class="w-100 m-3 password-view-area border border-rounded">
-                        </div>                        
+                        <textarea class="my-2 password-view-area border rounded form-control" readonly disabled>
+                        </textarea>                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -105,10 +110,8 @@ Dashboard
                             {{ render_field(delform.csrf_token) }}
                             {{ render_field(delform.delpwdid) }}
                             {{ render_field(delform.delmasterpwd) }}
-                            <button class="w-100 btn btn-lg btn-secondary" type="submit" id="form-password-delete-submit">Delete Password</button>
+                            <button class="btn btn-danger" type="submit" id="form-password-delete-submit">Delete Password</button>
                         </form>
-                        <div class="w-100 m-3 password-view-area border border-rounded">
-                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -127,32 +130,21 @@ Dashboard
 <script>
     $(document).ready(() => {
         // view model form elements
-        var viewformfields = {
-            csrf_token: {
-                input: document.getElementById('#form-password-view #csrf_token')
-            },
-            viewpwdid: {
-                input: document.getElementById('#form-password-view #viewpwdid')
-            },
-            viewmasterpwd: {
-                input: document.getElementById('#form-password-view #viewmasterpwd'),
-                error: document.getElementById('#form-password-view #viewmasterpwd-error')
+        let viewformfields = {};
+        $('#form-password-view').find('.form-control').each((i, elem) => {
+            viewformfields[elem.id] = {
+                input: document.getElementById(elem.id),
+                error: document.getElementById(elem.id + "-error")
             }
-        };
+        });
 
-        // delete modal form elements
-        var delformfields = {
-            csrf_token: {
-                input: document.getElementById('#form-password-delete #csrf_token')
-            },
-            delpwdid: {
-                input: document.getElementById('#form-password-delete #viewpwdid')
-            },
-            delmasterpwd: {
-                input: document.getElementById('#form-password-delete #viewmasterpwd'),
-                error: document.getElementById('#form-password-delete #viewmasterpwd-error')
+        let delformfields = {};
+        $('#form-password-delete').find('.form-control').each((i, elem) => {
+            delformfields[elem.id] = {
+                input: document.getElementById(elem.id),
+                error: document.getElementById(elem.id + "-error")
             }
-        }
+        });
 
 
         $('#password-list').dataTable({
@@ -165,11 +157,10 @@ Dashboard
             ]
         });
 
-        $('.edit-password-btn').click((e) => {
+        $('.edit-password-btn').click(function(e) {
             e.preventDefault();
-            var pwdid = $(e.target).attr('data-id-value');
-            var pwdname = $(e.target).attr('data-name-value');
-            console.log($(e.target));
+            var pwdid = $(this).attr('data-id-value');
+            var pwdname = $(this).attr('data-name-value');
 
             $.confirm({
                 title: 'Edit Password',
@@ -185,13 +176,14 @@ Dashboard
             });
         });
 
-        $('.password-view-modal-btn').click((e) => {
+        $('.password-view-modal-btn').click(function (e) {
             e.preventDefault();
-            var pwdid = $(this).attr('id-value');
+            var pwdid = $(this).attr('data-id-value');
+            console.log(pwdid);
             $('#viewpwdid').val(pwdid);
             $('#password-view-modal').modal('show');
 
-            $('#form-password-view-submit').click(async (e2) => {
+            $('#form-password-view-submit').click(async function(e2) {
                 e2.preventDefault();
 
                 // clear up the form
@@ -206,58 +198,50 @@ Dashboard
                     return [k, v.input.value]
                 })));
 
-                try {
-                    const response = await fetch("{{ url_for('view_password') }}", {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        viewbody
-                    });
-                    const responsedata = await response.json();
+                $.ajax({
+                    type: "POST",
+                    url: "{{ url_for('view_password') }}",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: viewbody,
+                    success: function(responsedata) {
+                        console.log(responsedata.data);
+                        $('.password-view-area').val(JSON.stringify(responsedata.data, null, "\t"));
+                        //$('#password-view-modal').modal('hide');
+                    },
+                    error: function(err) {
 
-                    // check based on response.status
-                    switch(response.status) {
-                        case 200:
-                            console.log(responsedata);      // success
-                            break;
-                        case 400:
-                            Object.keys(responsedata.errors).forEach((key) => {
-                                viewformfields[key].input.classList.add('is-invalid');
-                                if (viewformfields[key].error) {
-                                    viewformfields[key].error.innerHTML = responsedata.errors[key][0];
-                                }
-                            });
-                            break;
-                        default:
-                            $.alert({
-                                title: 'Encountered an error!',
-                                content: String(responsedata.errors),
-                                type: 'red',
-                                typeAnimated: true,
-                            });
-                            break;
+                        const responsedata = err.responseJSON;
+                        switch(err.status) {
+                            case 400:
+                                Object.keys(responsedata.errors).forEach((key) => {
+                                    viewformfields[key].input.classList.add('is-invalid');
+                                    if (viewformfields[key].error) {
+                                        viewformfields[key].error.innerHTML = responsedata.errors[key][0];
+                                    }
+                                });
+                                break;
+                            default:
+                                $.alert({
+                                    title: 'Encountered an error!',
+                                    content: JSON.stringify(responsedata.errors ?? responsedata),
+                                    type: 'red',
+                                    typeAnimated: true,
+                                });
+                                break;
+                        }
                     }
-                } catch (err) {
-                    $.alert({
-                        title: 'Encountered an error!',
-                        content: `Server side error :: ${String(err)}, please contact support.`,
-                        type: 'red',
-                        typeAnimated: true,
-                    });
-                }
-
-
+                });
             });
 
         });
 
-        $('.password-delete-modal-btn').click((e) => {
+        $('.password-delete-modal-btn').click(function (e) {
             e.preventDefault();
             var pwdid = $(this).attr('id-value');
             $('#password-delete-modal').modal('show');
 
-            $('#form-password-delete-submit').click(async (e2) => {
+            $('#form-password-delete-submit').click(async function(e2) {
                 e2.preventDefault();
 
                 // clear up the form

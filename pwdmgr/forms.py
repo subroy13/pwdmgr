@@ -24,7 +24,7 @@ class CreatePasswordForm(FlaskForm):
 
 class EditPasswordForm(FlaskForm):
     pwdid = HiddenField('Password Id', validators=[InputRequired()])
-    pwdname = StringField('Password Name', validators=[InputRequired()])
+    pwdname = StringField('Password Name', validators=[InputRequired()], render_kw={'disabled':''})
     pwdtype = StringField('Password Group', validators=[InputRequired()])
     description = TextAreaField('Description', validators=[Optional()])
     sensitiveinfo = TextAreaField('Password Information', validators=[InputRequired()])
