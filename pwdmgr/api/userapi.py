@@ -20,6 +20,21 @@ def createNewUser(user: User):
     rows = appdb.executeQuery(query, params, False)
     return user.serialize()
 
+def deleteUser(userid: str):
+    query = "DELETE FROM {} WHERE userid = $2;".format(Config.DB_USER_TABLE)
+    params = [userid]
+    rows = appdb.executeQuery(query, params, False)
+    return userid
+
+def softDeleteUser(userid: str):
+    query = "UPDATE {} SET STATUS = $1 WHERE userid = $2;".format(Config.DB_USER_TABLE)
+    params = [
+        User.STATUS_INACTIVE,
+        userid
+    ]
+    rows = appdb.executeQuery(query, params, False)
+    return userid
+
 
 def getUser(username: str):
     query = "SELECT userid, username, useremail, salt, password, createdat, lastmodifiedat, status\

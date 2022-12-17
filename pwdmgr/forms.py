@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, EmailField, PasswordField, TextAreaField, HiddenField
+from wtforms import StringField, EmailField, PasswordField, TextAreaField, HiddenField, BooleanField
 from wtforms.validators import InputRequired, EqualTo, Length, Optional
 
 class UserSignupForm(FlaskForm):
@@ -13,6 +13,10 @@ class UserSigninForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min = 3, max = 15)])
     password = PasswordField('Password', validators=[InputRequired()])
     
+class UserDeleteForm(FlaskForm):
+    userid = HiddenField('User Id', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+    softdelete = BooleanField('Is soft deleted?', validators=[InputRequired()])
 
 class CreatePasswordForm(FlaskForm):
     pwdname = StringField('Password Name', validators=[InputRequired()])

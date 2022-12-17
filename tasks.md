@@ -1,3 +1,4 @@
 # Tasks
 
-1. Add user settings page, delete user and update password.
+1. Do QA.
+2. Do testing using cypress or other softwares.

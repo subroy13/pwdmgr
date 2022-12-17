@@ -19,5 +19,5 @@ CREATE TABLE "passwords" (
     createdat BIGINT NOT NULL,
     lastmodifiedat BIGINT NOT NULL,
 
-    FOREIGN KEY (userid) REFERENCES "users"(userid)
+    FOREIGN KEY (userid) REFERENCES "users"(userid) ON DELETE CASCADE
 );

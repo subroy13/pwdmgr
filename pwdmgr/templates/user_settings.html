@@ -1,0 +1,177 @@
+{% extends '_base.html' %}
+{% from './macros/forms.html' import render_field %}
+
+{% block pagetitle %}
+Settings
+{% endblock %}
+
+{% block customcss %}
+<style>
+    .dropdown-menu[data-bs-popper] {
+        left: auto;
+        right: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3 my-3" style="text-align: left;">
+    <div class="d-flex align-items-start">
+        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <button class="nav-link active" id="v-pills-profile-tab" data-bs-toggle="pill"
+                data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile"
+                aria-selected="true">
+                Profile
+            </button>
+            <button class="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages"
+                type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">
+                Change password
+            </button>
+            <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings"
+                type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">
+                Delete Account
+            </button>
+        </div>
+        <div class="tab-content" id="v-pills-tabContent">
+            <div class="tab-pane fade active show" id="v-pills-profile" role="tabpanel"
+                aria-labelledby="v-pills-profile-tab" tabindex="0">
+                <div class="border rounded p-3 w-100">
+                    <p class="fw-bold">Username: <span class="lead">{{ user.username }}</span></p>
+                    <p class="fw-bold">Useremail: <span class="lead">{{ user.useremail }}</span></p>
+                    <p class="fw-bold">Status:
+                        {% if user.status == 0 %}
+                        <span class="badge rounded-pill text-bg-success">Active</span>
+                        {% else %}
+                        <span class="badge rounded-pill text-bg-danger">Inactive</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab"
+                tabindex="0">
+                <div class="border rounded p-3 w-100">
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading">Not Supported!</h4>
+                        <p>Although I understand this is a very basic and desirable feature, it is not supported yet!</p>
+                        <hr>
+                        <p class="mb-0">
+                            Read on below to understand about the techincal difficulties about supporting your login password updation feature.
+                            Since all your password's sensitive info is encrypted, it is done so using your login password as a master key.
+                            Changing this means, we need to go through all your passwords, decrypt them and encrypt with your new login password.
+                            This is too much of migration work for a simple change, and would raise a reliability issue.
+                            To migitate login password changes to some extent, I will be adding MFA based two-factor login soon as a measure of additional security.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab"
+                tabindex="0">
+                <div class="border rounded p-3 w-100">
+                    <div class="alert alert-danger d-flex align-items-start" role="alert">
+                        <p>
+                            <i class="fa fa-solid fa-radiation text-danger"></i>
+                            You are trying to delete your account, note that all your passwords will be lost!
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <form id="form-delete-user">
+                            {{ render_field(form.csrf_token) }}
+                            {{ render_field(form.userid) }}
+                            {{ render_field(form.password) }}
+                            <div class="form-check">
+                                <input class="form-check-input form-control" type="checkbox" value="false" id="softdelete">
+                                <label class="form-check-label" for="softdelete">
+                                  Soft Delete (Tick this if you want us to keep all your passwords, in case if you change your mind and re-activate your account.)
+                                </label>
+                              </div>
+                            <button class="btn btn-danger mx-auto" type="submit" id="form-delete-submit">Delete user</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customjs %}
+<script>
+    $(document).ready(function(){
+        let formfields = {};
+        $('#form-delete-user').find('.form-control').each((i, elem) => {
+            formfields[elem.id] = {
+                input: document.getElementById(elem.id),
+                error: document.getElementById(elem.id + "-error")
+            }
+        });
+        formfields.userid.input.value = "{{ user.id }}";
+
+        $('#softdelete').click(function(e) {
+            if ($('#softdelete').val() == "false") {
+                $('#softdelete').val("true");
+            } else {
+                $('#softdelete').val("false");
+            }
+        });
+
+        $('#form-delete-submit').click(function(e) {
+            e.preventDefault();
+
+            // clear up the form
+            Object.keys(formfields).forEach((key) => {
+                formfields[key].input.classList.remove('is-invalid');
+                if (formfields[key].error) {
+                    formfields[key].error.innerHTML = "";
+                }
+            });
+
+            let body = JSON.stringify(Object.fromEntries(Object.entries(formfields).map(([k, v]) => {
+                return [k, v.input.value]
+            })));
+
+            $.ajax({
+                url: "{{ url_for('user_settings') }}",
+                method: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                data: body,
+                success: function(responsedata) {
+                    $.confirm({
+                        title: 'User deleted!',
+                        content: 'Your account has been inactived successfully',
+                        type: 'orange',
+                        buttons: {
+                            OK: function () {
+                                window.location.replace("{{ url_for('logout') }}");
+                            }
+                        }
+                    });
+                },
+                error: function(err) {
+                    const responsedata = err.responseJSON;
+                    switch(err.status) {
+                        case 400:
+                            Object.keys(responsedata.errors).forEach((key) => {
+                                formfields[key].input.classList.add('is-invalid');
+                                if (formfields[key].error) {
+                                    formfields[key].error.innerHTML = responsedata.errors[key][0];
+                                }
+                            });
+                            break;
+                        default:
+                            console.log(responsedata);
+                            $.alert({
+                                title: 'Encountered an error!',
+                                content: String(responsedata.errors),
+                                type: 'red',
+                                typeAnimated: true,
+                            });
+                            break;
+                    }
+                }
+            });
+
+        });
+    });
+</script>
+{% endblock %}

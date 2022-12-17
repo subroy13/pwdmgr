@@ -4,18 +4,19 @@ from . import app
 from .forms import (
     UserSigninForm, 
     UserSignupForm, 
+    UserDeleteForm,
     CreatePasswordForm, 
     EditPasswordForm,
     ViewPasswordForm,
     DeletePasswordForm
 )
 from .models import User, Password
-from .api.userapi import createNewUser, getUser, getUserById
+from .api.userapi import createNewUser, getUser, getUserById, deleteUser, softDeleteUser
 from .api.passapi import (
     createNewPassword, 
     listAllPasswords, 
     updatePassword, 
-    deletePassword, 
+    deletePassword,
     getPasswordById,
     viewPassword
 )
@@ -28,6 +29,7 @@ def home():
 
 @app.route("/dashboard/")
 def dashboard():
+    print(session)
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
         pwdlist = listAllPasswords(user)
@@ -249,4 +251,27 @@ def view_password():
                 return jsonify({"data": jsonobj}), 200
             return jsonify({ "errors": form.errors }), 400
     return redirect(url_for('home'))
+
+@app.route('/user/setting', methods = ["GET", "POST"])
+def user_settings():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        form = UserDeleteForm()
+        if request.method == "POST":
+            if form.validate():
+                print(form.softdelete.data)
+                if not user.verify_password_crypt(form.password.data):
+                    return jsonify({"errors": {"password": ["Invalid login password"]}}), 400
+                try:
+                    if form.softdelete.data:
+                        softDeleteUser(form.userid.data)
+                    else:
+                        deleteUser(form.userid.data)
+                except Exception as e:
+                    return jsonify({"errors": str(e)}), 500
+            else:
+                return jsonify({"errors": form.errors}), 400
+        return render_template('user_settings.html', user = user, form = form)
+    else:
+        return redirect(url_for('home'))
 
