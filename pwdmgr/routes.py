@@ -176,6 +176,42 @@ def edit_password():
             return render_template('edit_password.html', form = form, user = user)
     return redirect(url_for('home'))
 
+@app.route('/password/edit/sensitiveinfo', methods = ['POST'])
+def password_edit_sensitiveinfo():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        if request.method == "POST":
+            jsondata = request.get_json()
+            try:                     
+                # verify edit password for logged in user or not
+                oldpwd = getPasswordById(jsondata["pwdid"])
+                if oldpwd is None:
+                    return jsonify({ "errors": "Password not found" }), 404
+                if oldpwd.auth_user.id != user.id:
+                    # invalid user, not authorized
+                    return jsonify({ "errors": "User is unauthorized to perform this action" }), 401
+
+                # verify master password
+                try:
+                    master_key = user.generateMasterKey(jsondata["masterpwd"])
+                except Exception as e:
+                    return jsonify({"errors": {"viewmasterpwd": ["Invalid master password"]} }), 400
+
+                try:
+                    sensitiveinfo = json.loads(jsondata["sensitiveinfo"])
+                except Exception as e:
+                    return jsonify({"errors": {"passwordviewarea": ["Invalid json string"]}}), 400
+
+                oldpwd.addSensitiveInfo(master_key, sensitiveinfo)
+                pwddata = updatePassword(oldpwd)
+                return jsonify({"data": pwddata}), 200
+            except Exception as e:
+                print(e)
+                return jsonify({"errors": str(e)}), 500
+
+    return redirect(url_for('home'))
+
+
 
 @app.route('/password/delete', methods = ['POST'])
 def delete_password():

@@ -15,17 +15,16 @@ Dashboard
         text-overflow: ellipsis;
     }
 
-    .password-view-area {
+    #passwordviewarea {
         height: 200px;
         overflow: scroll;
     }
-    
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-3 my-3">
-    <h1 class = "h4">You are logged in as {{ user.username }}</h1>
+    <h1 class="h4">You are logged in as {{ user.username }}</h1>
     <p class="lead">Here is the list of your passwords.</p>
     <div class="w-100">
         <div class="d-flex flex-row-reverse mb-3">
@@ -46,24 +45,28 @@ Dashboard
                 </thead>
                 <tbody>
                     {% for pwd in pwdlist %}
-                        <tr>
-                            <th scope="row">{{ loop.index }}</th>
-                            <td>{{ pwd.name }}</td>
-                            <td>{{ pwd.type }}</td>
-                            <td class="description-col">{{ pwd.description }}</td>
-                            <td class="d-flex justify-content-around">
-                                <button class="btn btn-primary mx-1 password-view-modal-btn" data-id-value="{{ pwd.id }}" data-bs-toggle="modal"><i class="fa fa-solid fa-eye"></i></button>
-                                <button class="btn btn-warning mx-1 edit-password-btn" data-id-value="{{ pwd.id }}" data-name-value="{{ pwd.name }}"><i class="fa fa-solid fa-pen"></i></button>
-                                <button class="btn btn-danger mx-1 password-delete-modal-btn" id-value="{{ pwd.id }}" data-bs-toggle="modal"><i class="fa fa-solid fa-trash"></i></button>                                
-                            </td>
-                        </tr>
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ pwd.name }}</td>
+                        <td>{{ pwd.type }}</td>
+                        <td class="description-col">{{ pwd.description }}</td>
+                        <td class="d-flex justify-content-around">
+                            <button class="btn btn-primary mx-1 password-view-modal-btn" data-id-value="{{ pwd.id }}"
+                                data-bs-toggle="modal"><i class="fa fa-solid fa-eye"></i></button>
+                            <button class="btn btn-warning mx-1 edit-password-btn" data-id-value="{{ pwd.id }}"
+                                data-name-value="{{ pwd.name }}"><i class="fa fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger mx-1 password-delete-modal-btn" id-value="{{ pwd.id }}"
+                                data-bs-toggle="modal"><i class="fa fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </div>    
+        </div>
 
         <!-- Modal View -->
-        <div class="modal hide fade" id="password-view-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="password-view-label" aria-hidden="true">
+        <div class="modal modal-lg hide fade" id="password-view-modal" data-bs-backdrop="static"
+            data-bs-keyboard="false" tabindex="-1" aria-labelledby="password-view-label" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content border text-dark">
                     <div class="modal-header">
@@ -71,15 +74,28 @@ Dashboard
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="lead">Please enter your master password to view.</p>
-                        <form id="form-password-view">
-                            {{ render_field(viewform.csrf_token) }}
-                            {{ render_field(viewform.viewpwdid) }}
-                            {{ render_field(viewform.viewmasterpwd) }}
-                            <button class="btn btn-primary" type="submit" id="form-password-view-submit">View Password Details</button>
-                        </form>
-                        <textarea class="my-2 password-view-area border rounded form-control" readonly disabled>
-                        </textarea>                        
+                        <div class="container-fluid">
+                            <p class="lead">Please enter your master password to view.</p>
+                            <form id="form-password-view">
+                                {{ render_field(viewform.csrf_token) }}
+                                {{ render_field(viewform.viewpwdid) }}
+                                {{ render_field(viewform.viewmasterpwd) }}
+                                <button class="btn btn-primary" type="submit" id="form-password-view-submit">View
+                                    Password Details</button>
+                            </form>
+                            <div class="row my-2">
+                                <div class="col-md-10 ms-auto">
+                                    <textarea class="my-2 border rounded form-control" disabled readonly
+                                        id="passwordviewarea">
+                                    </textarea>
+                                    <button class="btn btn-primary w-100" id="edit-button">Edit</button>
+                                </div>
+                                <div class="col-md-2 ms-auto">
+                                    <button class="btn btn-warning ml-1" id="beautify-button">Beautify</button>
+                                    <p class="text-danger" id="beautify-error"></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -89,12 +105,14 @@ Dashboard
         </div>
 
         <!-- Modal Delete -->
-        <div class="modal hide fade" id="password-delete-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="password-delete-label" aria-hidden="true">
+        <div class="modal hide fade" id="password-delete-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="password-delete-label" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content border text-dark">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="password-delete-label">Delete password</h1>
-                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p class="lead text-danger">Please enter your master password to confirm delete.</p>
@@ -102,7 +120,8 @@ Dashboard
                             {{ render_field(delform.csrf_token) }}
                             {{ render_field(delform.delpwdid) }}
                             {{ render_field(delform.delmasterpwd) }}
-                            <button class="btn btn-danger" type="submit" id="form-password-delete-submit">Delete Password</button>
+                            <button class="btn btn-danger" type="submit" id="form-password-delete-submit">Delete
+                                Password</button>
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -111,7 +130,7 @@ Dashboard
                 </div>
             </div>
         </div>
-        
+
     </div>
 </div>
 {% endblock %}
@@ -138,18 +157,17 @@ Dashboard
             }
         });
 
-
         $('#password-list').dataTable({
             "columns": [
                 null,
                 null,
                 null,
-                {"width": "40%"},
+                { "width": "40%" },
                 null
             ]
         });
 
-        $('.edit-password-btn').click(function(e) {
+        $('.edit-password-btn').click(function (e) {
             e.preventDefault();
             var pwdid = $(this).attr('data-id-value');
             var pwdname = $(this).attr('data-name-value');
@@ -159,10 +177,10 @@ Dashboard
                 content: `Do you want to edit password '${pwdname}'?`,
                 type: 'orange',
                 buttons: {
-                    Yes: function() {
+                    Yes: function () {
                         window.location.replace("{{ url_for('edit_password') }}?id=" + pwdid);
                     },
-                    No: function() {
+                    No: function () {
                     }
                 }
             });
@@ -175,7 +193,7 @@ Dashboard
             $('#viewpwdid').val(pwdid);
             $('#password-view-modal').modal('show');
 
-            $('#form-password-view-submit').click(function(e2) {
+            $('#form-password-view-submit').click(function (e2) {
                 e2.preventDefault();
 
                 // clear up the form
@@ -196,14 +214,14 @@ Dashboard
                     contentType: "application/json",
                     dataType: "json",
                     data: viewbody,
-                    success: function(responsedata) {
+                    success: function (responsedata) {
                         console.log(responsedata.data);
-                        $('.password-view-area').val(JSON.stringify(responsedata.data, null, "\t"));
+                        $('#passwordviewarea').val(JSON.stringify(responsedata.data, null, "\t"));
                     },
-                    error: function(err) {
+                    error: function (err) {
 
                         const responsedata = err.responseJSON;
-                        switch(err.status) {
+                        switch (err.status) {
                             case 400:
                                 Object.keys(responsedata.errors).forEach((key) => {
                                     viewformfields[key].input.classList.add('is-invalid');
@@ -225,6 +243,95 @@ Dashboard
                 });
             });
 
+            $('#beautify-button').click(function (e) {
+                e.preventDefault();
+                try {
+                    $('#beautify-error').html("");
+                    var info = $('#passwordviewarea').val();
+                    $('#passwordviewarea').val(JSON.stringify(JSON.parse(info), null, "\t"));
+                } catch (err) {
+                    $('#beautify-error').html(String(err));
+                }
+            });
+
+            $('#edit-button').click(function (e) {
+                e.preventDefault();
+                if ($('#edit-button').html() == "Edit") {
+                    $('#passwordviewarea').prop('disabled', (i, v) => !v);
+                    $('#passwordviewarea').prop('readonly', (i, v) => !v);
+                    $('#edit-button').html("Save");
+                } else {
+                    // check and validate
+                    let editformfields = {
+                        viewmasterpwd: {
+                            input: document.getElementById('viewmasterpwd'),
+                            error: document.getElementById('viewmasterpwd-error')
+                        },
+                        passwordviewarea: {
+                            input: document.getElementById('passwordviewarea'),
+                            error: document.getElementById('beautify-error')
+                        }
+                    };
+
+                    // clear up the form
+                    Object.keys(editformfields).forEach((key) => {
+                        editformfields[key].input.classList.remove('is-invalid');
+                        if (editformfields[key].error) {
+                            editformfields[key].error.innerHTML = "";
+                        }
+                    });
+
+                    $.ajax({
+                        method: "POST",
+                        url: "{{ url_for('password_edit_sensitiveinfo') }}",
+                        contentType: "application/json",
+                        dataType: "json",
+                        data: JSON.stringify({
+                            pwdid, 
+                            masterpwd: editformfields.viewmasterpwd.input.value,
+                            sensitiveinfo: editformfields.passwordviewarea.input.value
+                        }),
+                        success: function(responsedata) {
+                            $.alert({
+                                title: 'Password Updated',
+                                content: `Password '${responsedata.data.name}' updated successfully`,
+                                type: 'green',
+                                typeAnimated: true,
+                                buttons: {
+                                    Ok: function () { }
+                                }
+                            });
+                            $('#passwordviewarea').prop('disabled', (i, v) => !v);
+                            $('#passwordviewarea').prop('readonly', (i, v) => !v);
+                            $('#edit-button').html("Edit");
+                        },
+                        error: function(err) {
+                            const responsedata = err.responseJSON;
+                            switch (err.status) {
+                                case 400:
+                                    Object.keys(responsedata.errors).forEach((key) => {
+                                        editformfields[key].input.classList.add('is-invalid');
+                                        if (editformfields[key].error) {
+                                            editformfields[key].error.innerHTML = responsedata.errors[key][0];
+                                        }
+                                    });
+                                    break;
+                                default:
+                                    $.alert({
+                                        title: 'Encountered an error!',
+                                        content: JSON.stringify(responsedata.errors ?? responsedata),
+                                        type: 'red',
+                                        typeAnimated: true,
+                                    });
+                                    break;
+                            }
+                        }
+                    });
+                }
+            });
+
+
+
         });
 
         $('.password-delete-modal-btn').click(function (e) {
@@ -233,7 +340,7 @@ Dashboard
             $('#delpwdid').val(pwdid);
             $('#password-delete-modal').modal('show');
 
-            $('#form-password-delete-submit').click(async function(e2) {
+            $('#form-password-delete-submit').click(async function (e2) {
                 e2.preventDefault();
 
                 // clear up the form
@@ -254,7 +361,7 @@ Dashboard
                     contentType: "application/json",
                     dataType: "json",
                     data: delbody,
-                    success: function(responsedata) {
+                    success: function (responsedata) {
                         console.log(responsedata.data);
                         $.alert({
                             title: 'Password Deleted',
@@ -262,17 +369,15 @@ Dashboard
                             type: 'orange',
                             typeAnimated: true,
                             buttons: {
-                                Ok: function() {
+                                Ok: function () {
                                     window.location.replace("{{ url_for('dashboard') }}")
                                 }
                             }
                         });
                     },
-                    error: function(err) {
-                        console.log(err);
-                        console.log(delformfields);
+                    error: function (err) {
                         const responsedata = err.responseJSON;
-                        switch(err.status) {
+                        switch (err.status) {
                             case 400:
                                 Object.keys(responsedata.errors).forEach((key) => {
                                     delformfields[key].input.classList.add('is-invalid');
@@ -293,7 +398,7 @@ Dashboard
                     }
                 });
             });
-            
+
         });
 
 
