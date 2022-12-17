@@ -3,6 +3,7 @@
 from ..models import User
 from .. import appdb
 from ..config import Config
+import time
 
 def createNewUser(user: User):
     query = "INSERT INTO {}(userid, username, useremail, salt, password, createdat, lastmodifiedat, status)\
@@ -27,9 +28,10 @@ def deleteUser(userid: str):
     return userid
 
 def softDeleteUser(userid: str):
-    query = "UPDATE {} SET STATUS = $1 WHERE userid = $2;".format(Config.DB_USER_TABLE)
+    query = "UPDATE {} SET STATUS = $1, lastmodifiedat = $2 WHERE userid = $3;".format(Config.DB_USER_TABLE)
     params = [
         User.STATUS_INACTIVE,
+        int(time.time()),
         userid
     ]
     rows = appdb.executeQuery(query, params, False)

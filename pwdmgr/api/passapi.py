@@ -4,6 +4,7 @@ from ..models import Password, User
 from .. import appdb
 from ..config import Config
 from .userapi import getUserById
+import time
 
 def createNewPassword(pwd: Password):
     query = "INSERT INTO {}(pwdid, name, type, description, sensitiveinfo, userid, createdat, lastmodifiedat)\
@@ -46,7 +47,7 @@ def getPasswordById(pwdid: str):
 
 def updatePassword(pwd: Password):
     query = "UPDATE {} SET type = $1, description = $2, lastmodifiedat = $4 WHERE pwdid = $5;".format(Config.DB_PWD_TABLE)
-    params = [pwd.pwdtype, pwd.description, pwd.lastmodified_at, pwd.id]
+    params = [pwd.pwdtype, pwd.description, int(time.time()), pwd.id]
     rows = appdb.executeQuery(query, params, False)
     return pwd.serialize()
 
