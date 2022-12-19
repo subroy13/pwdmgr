@@ -27,6 +27,11 @@
   z-index: 10;
 }
 
+.navbar .dropdown-menu[data-bs-popper] {
+  left: auto;
+  right: 0;
+}
+
 footer {
   height: 50px;
 }

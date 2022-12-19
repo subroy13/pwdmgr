@@ -267,6 +267,8 @@ def user_settings():
                         softDeleteUser(form.userid.data)
                     else:
                         deleteUser(form.userid.data)
+                    del session['loggedinuserid']
+                    return jsonify({"data": user.serialize() }), 200
                 except Exception as e:
                     return jsonify({"errors": str(e)}), 500
             else:

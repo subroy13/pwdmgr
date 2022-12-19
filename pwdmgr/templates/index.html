@@ -18,10 +18,12 @@
 
 {% block content %}
 <main class="w-100 h-100 px-3 d-flex flex-column justify-content-center align-items-center">
-    <div class="row">
+    <div class="row my-5 py-5">
         <div class="col-md-8 mx-auto">
             <h1>Password Manager</h1>
-            <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
+            <p class="lead">
+                A simple, elegant and <b>open source</b> password manager built under the assumption of zero-trust model. 
+            </p>
             <p class="lead">
               <a href="{{ url_for('login') }}" class="btn btn-lg btn-secondary text-white fw-bold">Login</a>
               <a href="{{ url_for('signup') }}" class="btn btn-lg btn-secondary text-light fw-bold ml-3">Signup</a>        

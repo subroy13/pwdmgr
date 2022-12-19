@@ -22,9 +22,10 @@ def createNewUser(user: User):
     return user.serialize()
 
 def deleteUser(userid: str):
-    query = "DELETE FROM {} WHERE userid = $2;".format(Config.DB_USER_TABLE)
-    params = [userid]
-    rows = appdb.executeQuery(query, params, False)
+    query = "DELETE FROM {} WHERE userid = $1;".format(Config.DB_PWD_TABLE)
+    rows = appdb.executeQuery(query, [userid], False)
+    query = "DELETE FROM {} WHERE userid = $1;".format(Config.DB_USER_TABLE)
+    rows = appdb.executeQuery(query, [userid], False)
     return userid
 
 def softDeleteUser(userid: str):

@@ -9,3 +9,4 @@ from .database import Database
 appdb = Database()  # Only create on instance of DB class, reuse everywhere as needed
 
 from . import routes
+from . import errors

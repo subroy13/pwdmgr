@@ -91,7 +91,16 @@ Sign up
                 data: body,
                 success: function(responsedata) {
                     console.log(responsedata);      // success
-                    window.location.replace("{{ url_for('dashboard') }}");
+                    $.confirm({
+                        title: 'Thank you!',
+                        content: 'Thank you for signing up. You will now be redirected to your password manager dashboard.',
+                        type: 'green',
+                        buttons: {
+                            Ok: function() {
+                                window.location.replace("{{ url_for('dashboard') }}");
+                            }
+                        }
+                    })
                 },
                 error: function(err) {
                     const responsedata = err.responseJSON;
