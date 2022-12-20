@@ -56,6 +56,7 @@ Sign up
 
 
 {% block customjs %}
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
     $(document).ready(() => {
 
@@ -91,16 +92,37 @@ Sign up
                 data: body,
                 success: function(responsedata) {
                     console.log(responsedata);      // success
+
                     $.confirm({
                         title: 'Thank you!',
-                        content: 'Thank you for signing up. You will now be redirected to your password manager dashboard.',
+                        content: `<div>
+                            <p>Thank you for signing up.</p>
+                            <p>Please scan the QR code with Google Authenticator for future usage. 
+                                <b>Note that, this will not be available later.</b>
+                            </p>
+                            <div id="qrcode"></div>
+                            <p>Click okay to redirect to the login page.</p>
+                        </div>`,
                         type: 'green',
+                        onContentReady: function() {
+                            var self = this;
+                            setTimeout(function() {
+                                const qrcode = new QRCode(document.getElementById('qrcode'), {
+                                    text: responsedata.data.qr_seed,
+                                    width: 128,
+                                    height: 128,
+                                    colorDark : '#000',
+                                    colorLight : '#fff',
+                                    correctLevel : QRCode.CorrectLevel.H
+                                });
+                            }, 1000);
+                        },
                         buttons: {
                             Ok: function() {
-                                window.location.replace("{{ url_for('dashboard') }}");
+                                window.location.replace("{{ url_for('login') }}");
                             }
                         }
-                    })
+                    });                    
                 },
                 error: function(err) {
                     const responsedata = err.responseJSON;

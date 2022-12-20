@@ -1,11 +1,11 @@
 # Database connection handler class
 import sqlite3
-from .config import Config
+import os
 
 class Database:
 
     def __init__(self):
-        self.dbpath = Config.DB_PATH        
+        self.dbpath = os.getenv("APP_DBPATH") 
 
     def getConnection(self):
         try:

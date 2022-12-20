@@ -1,10 +1,11 @@
-import json, uuid, base64
+import json, uuid, base64, os
 from datetime import datetime 
 from cryptography.fernet import Fernet
-
-from ..config import Config
 from .user import User
 from ..api.userapi import getUserById
+
+BYTES_ENCODING = os.getenv("APP_BYTES_ENCODING")
+
 
 class Password:
     """
@@ -81,10 +82,10 @@ class Password:
 
     def __base64encode(self, json_object):
         json_string = json.dumps(json_object)
-        return base64.b64encode(json_string.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
+        return base64.b64encode(json_string.encode(BYTES_ENCODING)).decode(BYTES_ENCODING)
 
     def __base64decode(self, encoded_string: str):
-        json_string = base64.b64decode(encoded_string.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
+        json_string = base64.b64decode(encoded_string.encode(BYTES_ENCODING)).decode(BYTES_ENCODING)
         return json.loads(json_string)
 
     def __encrypt(self, master_key: bytes, json_obj):
@@ -93,14 +94,14 @@ class Password:
         """
         f = Fernet(master_key)
         msg = self.__base64encode(json_obj)
-        return f.encrypt(msg.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
+        return f.encrypt(msg.encode(BYTES_ENCODING)).decode(BYTES_ENCODING)
         
     def __decrypt(self, master_key: bytes, msg: str):
         """
             Accepts a master password and decrypts the sensitive information
         """
         f = Fernet(master_key)
-        decrypt_string = f.decrypt(msg.encode(Config.BYTES_ENCODING)).decode(Config.BYTES_ENCODING)
+        decrypt_string = f.decrypt(msg.encode(BYTES_ENCODING)).decode(BYTES_ENCODING)
         return self.__base64decode(decrypt_string)
 
     def decryptSensitiveInfo(self, master_key: bytes):

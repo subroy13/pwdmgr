@@ -88,7 +88,7 @@ def signup():
             try: 
                 # create a new user
                 user = User(form.username.data, form.useremail.data, form.password.data)
-                saved_user = createNewUser(user)
+                saved_user = createNewUser(user, form.password.data)
 
                 # if everything is done, set session and return the saved user
                 session['loggedinuserid'] = user.id
