@@ -82,6 +82,10 @@ class User:
         f = Fernet(master_key)
         return f.decrypt(encrypted_seed.encode(BYTES_ENCODING)).decode(BYTES_ENCODING)
 
+    def verify_totp(self, password: str, totp: str):
+        seed = self.decrypt_totp_seed(self.qr_seed, password)
+        return pyotp.totp.TOTP(seed).verify(totp)
+
     def create_password_crypt(self, password: str, salt: str):
         kdf = Scrypt(salt.encode(BYTES_ENCODING), 32, n = 2**14, r = 8, p = 1)
         cryptbytes = kdf.derive(password.encode(BYTES_ENCODING))
@@ -96,13 +100,17 @@ class User:
         except Exception as e:
             return False
 
-    def generateMasterKey(self, password: str, extrapart : str = None):
+    def generateMasterKey(self, password: str, extrapart : str = None, mfa: str = None):
+        if extrapart is None and mfa is None:
+            raise ValueError("Either extrapart or MFA must be passed")
         if self.verify_password_crypt(password):
             saltbytes = base64.b64decode(self.salt.encode(BYTES_ENCODING))
             kdf = PBKDF2HMAC(algorithm=SHA256(),length=32, salt=saltbytes,iterations=390000)
             if extrapart is None:
-                return base64.urlsafe_b64encode(kdf.derive(password.encode(BYTES_ENCODING)))
-            else:
-                return base64.urlsafe_b64encode(kdf.derive((password + extrapart).encode(BYTES_ENCODING)))
+                # validate mfa and get the app secret
+                if not self.verify_totp(password, mfa):
+                    raise PermissionError("Incorrect credentials, cannot generate master key")
+                extrapart = os.getenv("APP_ENCRYPT_SECRET")
+            return base64.urlsafe_b64encode(kdf.derive((password + extrapart).encode(BYTES_ENCODING)))
         else:
-            raise PermissionError("Incorrect password, cannot generate master key")
+            raise PermissionError("Incorrect credentials, cannot generate master key")

@@ -12,6 +12,7 @@ class UserSignupForm(FlaskForm):
 class UserSigninForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min = 3, max = 15)])
     password = PasswordField('Password', validators=[InputRequired()])
+    mfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
     
 class UserDeleteForm(FlaskForm):
     userid = HiddenField('User Id', validators=[InputRequired()])
@@ -24,6 +25,7 @@ class CreatePasswordForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional()])
     sensitiveinfo = TextAreaField('Password Information', validators=[InputRequired()])
     masterpwd = PasswordField('Master Password', validators=[InputRequired()])
+    mfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
 
 
 class EditPasswordForm(FlaskForm):
@@ -32,11 +34,14 @@ class EditPasswordForm(FlaskForm):
     pwdtype = StringField('Password Group', validators=[InputRequired()])
     description = TextAreaField('Description', validators=[Optional()])
     masterpwd = PasswordField('Master Password', validators=[InputRequired()])
+    mfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
 
 class ViewPasswordForm(FlaskForm):
     viewpwdid = HiddenField('Password Id', validators=[InputRequired()])
     viewmasterpwd = PasswordField('Master Password', validators=[InputRequired()])
+    viewmfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
 
 class DeletePasswordForm(FlaskForm):
     delpwdid = HiddenField('Password Id', validators=[InputRequired()])
     delmasterpwd = PasswordField('Master Password', validators=[InputRequired()])
+    delmfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])

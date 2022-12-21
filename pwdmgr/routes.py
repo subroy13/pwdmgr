@@ -27,9 +27,9 @@ def home():
         return redirect(url_for('dashboard'))
     return render_template('index.html', user = None)
 
+
 @app.route("/dashboard/")
 def dashboard():
-    print(session)
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
         pwdlist = listAllPasswords(user)
@@ -68,6 +68,10 @@ def login():
                 if not user.verify_password_crypt(form.password.data):
                     return jsonify({ "errors": {"password": ["Invalid credentials!"]} }), 400
                 
+                # verify MFA
+                if not user.verify_totp(form.password.data, form.mfa.data):
+                    return jsonify({"errors": {"password": ["Invalid MFA credentials"]} }), 400
+                
                 # if everything is correct, return the user and set session data
                 session['loggedinuserid'] = user.id
                 return jsonify({"data": user.serialize() }), 200
@@ -75,8 +79,8 @@ def login():
             except Exception as e:
                 return jsonify({"errors": str(e) }), 500
         return jsonify({ "errors": form.errors }), 400
-
     return render_template('login.html', form = form, user = None)
+
 
 @app.route('/auth/signup/', methods = ['GET', 'POST'])
 def signup():
@@ -117,9 +121,9 @@ def add_password():
                     
                     # verify master password
                     try:
-                        master_key = user.generateMasterKey(form.masterpwd.data)
+                        master_key = user.generateMasterKey(form.masterpwd.data, mfa=form.mfa.data)
                     except Exception as e:
-                        return jsonify({"errors": {"masterpwd": ["Invalid master password"]} }), 400
+                        return jsonify({"errors": {"masterpwd": ["Invalid credentials"], "mfa": ["Invalid credentials"]} }), 400
 
                     pwd = Password(form.pwdname.data, form.pwdtype.data, user, form.description.data)
                     pwd.addSensitiveInfo(master_key, jsoninfo)
@@ -152,9 +156,9 @@ def edit_password():
 
                     # verify master password
                     try:
-                        master_key = user.generateMasterKey(form.masterpwd.data)
+                        master_key = user.generateMasterKey(form.masterpwd.data, mfa=form.mfa.data)
                     except Exception as e:
-                        return jsonify({"errors": {"masterpwd": ["Invalid master password"]} }), 400
+                        return jsonify({"errors": {"masterpwd": ["Invalid credentials"], "mfa": ["Invalid credentials"]} }), 400
 
                     oldpwd.pwdtype = form.pwdtype.data
                     oldpwd.description = form.description.data
@@ -178,6 +182,7 @@ def edit_password():
             return render_template('edit_password.html', form = form, user = user)
     return redirect(url_for('home'))
 
+
 @app.route('/password/edit/sensitiveinfo', methods = ['POST'])
 def password_edit_sensitiveinfo():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
@@ -195,9 +200,9 @@ def password_edit_sensitiveinfo():
 
                 # verify master password
                 try:
-                    master_key = user.generateMasterKey(jsondata["masterpwd"])
+                    master_key = user.generateMasterKey(jsondata["masterpwd"], mfa=jsondata["mfa"])
                 except Exception as e:
-                    return jsonify({"errors": {"viewmasterpwd": ["Invalid master password"]} }), 400
+                    return jsonify({"errors": {"masterpwd": ["Invalid credentials"], "mfa": ["Invalid credentials"]} }), 400
 
                 try:
                     sensitiveinfo = json.loads(jsondata["sensitiveinfo"])
@@ -228,14 +233,15 @@ def delete_password():
                         return jsonify({"errors": "Password not found"}), 404
                     if pwd.auth_user.id != user.id:
                         return jsonify({"errors": "User is unauthorized to perform this action" }), 401
-                    master_key = pwd.auth_user.generateMasterKey(form.delmasterpwd.data)
+                    master_key = pwd.auth_user.generateMasterKey(form.delmasterpwd.data, mfa = form.delmfa.data)
                 except Exception as e:
                     # unauthorized user
-                    return jsonify({"errors": {"delmasterpwd": ["Invalid master password"]}}), 400
+                    return jsonify({"errors": {"masterpwd": ["Invalid credentials"], "delmfa": ["Invalid credentials"]} }), 400
                 res = deletePassword(form.delpwdid.data)  # do the delete now
                 return jsonify({"data": pwd.serialize() }), 200
             return jsonify({ "errors": form.errors }), 400
     return redirect(url_for('home'))
+
 
 @app.route('/password/view', methods = ['POST'])
 def view_password():
@@ -244,13 +250,14 @@ def view_password():
         form = ViewPasswordForm()
         if request.method == "POST":
             if form.validate():
-                jsonobj = viewPassword(form.viewpwdid.data, form.viewmasterpwd.data)
+                jsonobj = viewPassword(form.viewpwdid.data, form.viewmasterpwd.data, form.viewmfa.data)
                 if jsonobj is None:
                     # unauthorized user
-                    return jsonify({"errors": {"viewmasterpwd": ["Invalid master password"]}}), 400
+                    return jsonify({"errors": {"viewmasterpwd": ["Invalid credentials"], "viewmfa": ["Invalid credentials"]} }), 400
                 return jsonify({"data": jsonobj}), 200
             return jsonify({ "errors": form.errors }), 400
     return redirect(url_for('home'))
+
 
 @app.route('/user/setting', methods = ["GET", "POST"])
 def user_settings():

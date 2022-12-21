@@ -80,6 +80,7 @@ Dashboard
                                 {{ render_field(viewform.csrf_token) }}
                                 {{ render_field(viewform.viewpwdid) }}
                                 {{ render_field(viewform.viewmasterpwd) }}
+                                {{ render_field(viewform.viewmfa) }}
                                 <button class="btn btn-primary" type="submit" id="form-password-view-submit">View
                                     Password Details</button>
                             </form>
@@ -120,6 +121,7 @@ Dashboard
                             {{ render_field(delform.csrf_token) }}
                             {{ render_field(delform.delpwdid) }}
                             {{ render_field(delform.delmasterpwd) }}
+                            {{ render_field(delform.delmfa) }}
                             <button class="btn btn-danger" type="submit" id="form-password-delete-submit">Delete
                                 Password</button>
                         </form>
@@ -267,6 +269,10 @@ Dashboard
                             input: document.getElementById('viewmasterpwd'),
                             error: document.getElementById('viewmasterpwd-error')
                         },
+                        viewmfa: {
+                            input: document.getElementById('viewmfa'),
+                            error: document.getElementById('viewmfa-error')
+                        },
                         passwordviewarea: {
                             input: document.getElementById('passwordviewarea'),
                             error: document.getElementById('beautify-error')
@@ -289,7 +295,8 @@ Dashboard
                         data: JSON.stringify({
                             pwdid, 
                             masterpwd: editformfields.viewmasterpwd.input.value,
-                            sensitiveinfo: editformfields.passwordviewarea.input.value
+                            sensitiveinfo: editformfields.passwordviewarea.input.value,
+                            mfa: editformfields.viewmfa.input.value
                         }),
                         success: function(responsedata) {
                             $.alert({

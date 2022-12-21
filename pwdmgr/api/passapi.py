@@ -60,10 +60,10 @@ def deletePassword(pwdid: str):
     return rows
 
 
-def viewPassword(pwdid: str, master_pwd: str):
+def viewPassword(pwdid: str, master_pwd: str, mfa: str):
     try:
         pwd = getPasswordById(pwdid)
-        master_key = pwd.auth_user.generateMasterKey(master_pwd)
+        master_key = pwd.auth_user.generateMasterKey(master_pwd, mfa = mfa)
         return pwd.decryptSensitiveInfo(master_key)
     except Exception as e:
         return None
