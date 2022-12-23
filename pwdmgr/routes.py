@@ -63,11 +63,11 @@ def login():
                 user = getUser(form.username.data)
                 if user is None:
                     return jsonify({"errors": {"username": ["The specified username does not exist!"]}}), 400
-                
+
                 # verify the password
                 if not user.verify_password_crypt(form.password.data):
                     return jsonify({ "errors": {"password": ["Invalid credentials!"]} }), 400
-                
+
                 # verify MFA
                 if not user.verify_totp(form.password.data, form.mfa.data):
                     return jsonify({"errors": {"password": ["Invalid MFA credentials"]} }), 400
@@ -94,8 +94,8 @@ def signup():
                 user = User(form.username.data, form.useremail.data, form.password.data)
                 saved_user = createNewUser(user, form.password.data)
 
-                # if everything is done, set session and return the saved user
-                session['loggedinuserid'] = user.id
+                # if everything is done,and return the saved user
+                # do not set session as we need the MFA here
                 return jsonify({"data": saved_user}), 200
             except Exception as e:
                 print(e)
@@ -200,9 +200,9 @@ def password_edit_sensitiveinfo():
 
                 # verify master password
                 try:
-                    master_key = user.generateMasterKey(jsondata["masterpwd"], mfa=jsondata["mfa"])
+                    master_key = user.generateMasterKey(jsondata["viewmasterpwd"], mfa=jsondata["viewmfa"])
                 except Exception as e:
-                    return jsonify({"errors": {"masterpwd": ["Invalid credentials"], "mfa": ["Invalid credentials"]} }), 400
+                    return jsonify({"errors": {"viewmasterpwd": ["Invalid credentials"], "viewmfa": ["Invalid credentials"]} }), 400
 
                 try:
                     sensitiveinfo = json.loads(jsondata["sensitiveinfo"])

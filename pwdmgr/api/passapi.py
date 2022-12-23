@@ -4,13 +4,12 @@ from ..models import Password, User
 from .. import appdb
 from .userapi import getUserById
 import time, os
+from ..database import Database
 
-DB_USER_TABLE = os.getenv("APP_DB_USER_TABLE")
-DB_PWD_TABLE = os.getenv("APP_DB_PWD_TABLE")
 
 def createNewPassword(pwd: Password):
     query = "INSERT INTO {}(pwdid, name, type, description, sensitiveinfo, userid, createdat, lastmodifiedat)\
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);".format(DB_PWD_TABLE)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);".format(Database.DB_PWD_TABLE)
     params = [
         pwd.id,
         pwd.pwdname,
@@ -25,13 +24,13 @@ def createNewPassword(pwd: Password):
     return pwd.serialize()
 
 def listAllPasswords(user: User):
-    query = "SELECT pwdid, name, type, description FROM {} WHERE userid = $1 ORDER BY lastmodifiedat DESC;".format(DB_PWD_TABLE)
+    query = "SELECT pwdid, name, type, description FROM {} WHERE userid = $1 ORDER BY lastmodifiedat DESC;".format(Database.DB_PWD_TABLE)
     params = [user.id]
     rows = appdb.executeQuery(query, params, True)
     return [{"id": row['pwdid'], "name": row['name'], "type": row['type'], "description": row['description']} for row in rows]
 
 def getPasswordById(pwdid: str):
-    query = "SELECT pwdid, name, type, description, sensitiveinfo, userid FROM {} WHERE pwdid = $1 LIMIT 1;".format(DB_PWD_TABLE)
+    query = "SELECT pwdid, name, type, description, sensitiveinfo, userid FROM {} WHERE pwdid = $1 LIMIT 1;".format(Database.DB_PWD_TABLE)
     params = [pwdid]
     rows = appdb.executeQuery(query, params, True)
     if len(rows) == 0:
@@ -48,13 +47,13 @@ def getPasswordById(pwdid: str):
 
 
 def updatePassword(pwd: Password):
-    query = "UPDATE {} SET type = $1, description = $2, lastmodifiedat = $4 WHERE pwdid = $5;".format(DB_PWD_TABLE)
+    query = "UPDATE {} SET type = $1, description = $2, lastmodifiedat = $4 WHERE pwdid = $5;".format(Database.DB_PWD_TABLE)
     params = [pwd.pwdtype, pwd.description, int(time.time()), pwd.id]
     rows = appdb.executeQuery(query, params, False)
     return pwd.serialize()
 
 def deletePassword(pwdid: str):
-    query = "DELETE FROM {} WHERE pwdid = $1;".format(DB_PWD_TABLE)
+    query = "DELETE FROM {} WHERE pwdid = $1;".format(Database.DB_PWD_TABLE)
     params = [pwdid]
     rows = appdb.executeQuery(query, params, False)
     return rows

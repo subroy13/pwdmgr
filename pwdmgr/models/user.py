@@ -31,9 +31,10 @@ class User:
         self.salt = base64.b64encode(os.urandom(16)).decode(BYTES_ENCODING)
         if password is not None:
             self.password = self.create_password_crypt(password, self.salt)
+            self.qr_seed = self.encrypt_totp_seed(pyotp.random_base32(), password)
         else:
             self.password = None
-        self.qr_seed = self.encrypt_totp_seed(pyotp.random_base32(), password)
+            self.qr_seed = None
         self.status = User.STATUS_ACTIVE
 
     def serialize(self):

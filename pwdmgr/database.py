@@ -4,6 +4,9 @@ import os
 
 class Database:
 
+    DB_USER_TABLE = "users"
+    DB_PWD_TABLE = "passwords"
+
     def __init__(self):
         self.dbpath = os.getenv("APP_DBPATH") 
 

@@ -89,7 +89,7 @@ Dashboard
                                     <textarea class="my-2 border rounded form-control" disabled readonly
                                         id="passwordviewarea">
                                     </textarea>
-                                    <button class="btn btn-primary w-100" id="edit-button">Edit</button>
+                                    <button class="btn btn-primary w-50 mx-auto mb-2" id="edit-button">Edit</button>
                                 </div>
                                 <div class="col-md-2 ms-auto">
                                     <button class="btn btn-warning ml-1" id="beautify-button">Beautify</button>
@@ -198,6 +198,8 @@ Dashboard
             $('#form-password-view-submit').click(function (e2) {
                 e2.preventDefault();
 
+                $('.loader-wrapper').show();
+
                 // clear up the form
                 Object.keys(viewformfields).forEach((key) => {
                     viewformfields[key].input.classList.remove('is-invalid');
@@ -217,11 +219,12 @@ Dashboard
                     dataType: "json",
                     data: viewbody,
                     success: function (responsedata) {
+                        $('.loader-wrapper').hide();
                         console.log(responsedata.data);
                         $('#passwordviewarea').val(JSON.stringify(responsedata.data, null, "\t"));
                     },
                     error: function (err) {
-
+                        $('.loader-wrapper').hide();
                         const responsedata = err.responseJSON;
                         switch (err.status) {
                             case 400:
@@ -294,9 +297,9 @@ Dashboard
                         dataType: "json",
                         data: JSON.stringify({
                             pwdid, 
-                            masterpwd: editformfields.viewmasterpwd.input.value,
+                            viewmasterpwd: editformfields.viewmasterpwd.input.value,
                             sensitiveinfo: editformfields.passwordviewarea.input.value,
-                            mfa: editformfields.viewmfa.input.value
+                            viewmfa: editformfields.viewmfa.input.value
                         }),
                         success: function(responsedata) {
                             $.alert({
