@@ -45,6 +45,11 @@ class User:
             "status": self.status
         }
 
+    def updatePassword(self, oldpass: str, newpass: str):
+        totp_seed = self.decrypt_totp_seed(self.qr_seed, oldpass)
+        self.password = self.create_password_crypt(newpass, self.salt)
+        self.qr_seed = self.encrypt_totp_seed(totp_seed, newpass)
+
 
     @classmethod
     def convertToUser(cls, dbuser):

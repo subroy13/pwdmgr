@@ -84,6 +84,7 @@ Sign up
                 return [k, v.input.value]
             })));
 
+            $('.loader-wrapper').show();
             $.ajax({
                 url: "{{ url_for('signup') }}",
                 method: "POST",
@@ -91,8 +92,7 @@ Sign up
                 dataType: "json",
                 data: body,
                 success: function(responsedata) {
-                    console.log(responsedata);      // success
-
+                    $('.loader-wrapper').hide();
                     $.confirm({
                         title: 'Thank you!',
                         content: `<div>
@@ -115,7 +115,7 @@ Sign up
                                     colorLight : '#fff',
                                     correctLevel : QRCode.CorrectLevel.H
                                 });
-                            }, 1000);
+                            }, 500);
                         },
                         buttons: {
                             Ok: function() {
@@ -125,6 +125,7 @@ Sign up
                     });                    
                 },
                 error: function(err) {
+                    $('.loader-wrapper').hide();
                     const responsedata = err.responseJSON;
                     switch(err.status) {
                         case 400:

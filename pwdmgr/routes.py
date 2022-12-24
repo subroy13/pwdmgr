@@ -8,10 +8,18 @@ from .forms import (
     CreatePasswordForm, 
     EditPasswordForm,
     ViewPasswordForm,
-    DeletePasswordForm
+    DeletePasswordForm,
+    ChangeMasterPasswordForm
 )
 from .models import User, Password
-from .api.userapi import createNewUser, getUser, getUserById, deleteUser, softDeleteUser
+from .api.userapi import (
+    createNewUser, 
+    getUser, 
+    getUserById, 
+    deleteUser, 
+    softDeleteUser,
+    changeMasterPassword
+)
 from .api.passapi import (
     createNewPassword, 
     listAllPasswords, 
@@ -264,11 +272,22 @@ def user_settings():
     if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
         user = getUserById(session['loggedinuserid'])
         form = UserDeleteForm()
+        changeform = ChangeMasterPasswordForm()
+        return render_template('user_settings.html', user = user, form = form, changeform = changeform)
+    else:
+        return redirect(url_for('home'))
+
+@app.route('/user/delete', methods = ['POST'])
+def user_delete():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        form = UserDeleteForm()
         if request.method == "POST":
             if form.validate():
-                print(form.softdelete.data)
                 if not user.verify_password_crypt(form.password.data):
-                    return jsonify({"errors": {"password": ["Invalid login password"]}}), 400
+                    return jsonify({"errors": {"password": ["Invalid login password"], "mfa": ["Invalid MFA Code"]}}), 400
+                if not user.verify_totp(form.password.data, form.mfa.data):
+                    return jsonify({"errors": {"password": ["Invalid login password"], "mfa": ["Invalid MFA Code"]}})
                 try:
                     if form.softdelete.data:
                         softDeleteUser(form.userid.data)
@@ -280,7 +299,33 @@ def user_settings():
                     return jsonify({"errors": str(e)}), 500
             else:
                 return jsonify({"errors": form.errors}), 400
-        return render_template('user_settings.html', user = user, form = form)
+        else:
+            return jsonify({"errors": "Method not allowed" }), 405
     else:
         return redirect(url_for('home'))
 
+
+@app.route('/user/password-change', methods = ['POST'])
+def user_change_password():
+    if 'loggedinuserid' in session and session['loggedinuserid'] is not None:
+        user = getUserById(session['loggedinuserid'])
+        form = ChangeMasterPasswordForm()
+        if request.method == "POST":
+            if form.validate():
+                if not user.verify_password_crypt(form.oldpass.data):
+                    return jsonify({"errors": {"password": ["Invalid login password"], "mfa": ["Invalid MFA Code"]}}), 400
+                if not user.verify_totp(form.oldpass.data, form.mfa.data):
+                    return jsonify({"errors": {"password": ["Invalid login password"], "mfa": ["Invalid MFA Code"]}})
+                try:
+                    # try doing the change password migration
+                    changeMasterPassword(user, form.oldpass.data, form.newpass.data, form.mfa.data)
+                    del session['loggedinuserid']
+                    return jsonify({"data": user.serialize() }), 200
+                except Exception as e:
+                    return jsonify({"errors": str(e)}), 500
+            else:
+                return jsonify({"errors": form.errors}), 400
+        else:
+            return jsonify({"errors": "Method not allowed" }), 405
+    else:
+        return redirect(url_for('home'))

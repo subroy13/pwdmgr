@@ -35,7 +35,24 @@ class Database:
             print(e)
             raise e
 
+    def bulkinsert(self, tablename: str, rows: list):
+        if len(rows) > 0:
+            cols = list(rows[0].keys())
+            query = "INSERT INTO {}({}) VALUES ".format(tablename, ",".join(cols))
+            params = []
+            subquerylist = []
+            counter = 1
+            for row in rows:
+                x = []
+                for col in cols:
+                    x.append("${}".format(str(counter)))
+                    params.append(row[col])
+                    counter += 1
+                subquerylist.append("( " + ",".join(x) + " )")
+            query += (",".join(subquerylist) + ";")
+            response = self.executeQuery(query, params, False)
 
+        
         
 
 

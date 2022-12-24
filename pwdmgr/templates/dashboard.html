@@ -198,8 +198,6 @@ Dashboard
             $('#form-password-view-submit').click(function (e2) {
                 e2.preventDefault();
 
-                $('.loader-wrapper').show();
-
                 // clear up the form
                 Object.keys(viewformfields).forEach((key) => {
                     viewformfields[key].input.classList.remove('is-invalid');
@@ -212,6 +210,7 @@ Dashboard
                     return [k, v.input.value]
                 })));
 
+                $('.loader-wrapper').show();
                 $.ajax({
                     type: "POST",
                     url: "{{ url_for('view_password') }}",
@@ -290,6 +289,7 @@ Dashboard
                         }
                     });
 
+                    $('.loader-wrapper').show();
                     $.ajax({
                         method: "POST",
                         url: "{{ url_for('password_edit_sensitiveinfo') }}",
@@ -302,6 +302,7 @@ Dashboard
                             viewmfa: editformfields.viewmfa.input.value
                         }),
                         success: function(responsedata) {
+                            $('.loader-wrapper').hide();
                             $.alert({
                                 title: 'Password Updated',
                                 content: `Password '${responsedata.data.name}' updated successfully`,
@@ -316,6 +317,7 @@ Dashboard
                             $('#edit-button').html("Edit");
                         },
                         error: function(err) {
+                            $('.loader-wrapper').hide();
                             const responsedata = err.responseJSON;
                             switch (err.status) {
                                 case 400:
@@ -365,6 +367,7 @@ Dashboard
                     return [k, v.input.value]
                 })));
 
+                $('.loader-wrapper').show();
                 $.ajax({
                     type: "POST",
                     url: "{{ url_for('delete_password') }}",
@@ -372,7 +375,7 @@ Dashboard
                     dataType: "json",
                     data: delbody,
                     success: function (responsedata) {
-                        console.log(responsedata.data);
+                        $('.loader-wrapper').hide();
                         $.alert({
                             title: 'Password Deleted',
                             content: `Password '${responsedata.data.name}' deleted successfully`,
@@ -386,6 +389,7 @@ Dashboard
                         });
                     },
                     error: function (err) {
+                        $('.loader-wrapper').hide();
                         const responsedata = err.responseJSON;
                         switch (err.status) {
                             case 400:

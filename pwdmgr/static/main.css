@@ -42,7 +42,7 @@ footer {
   position: absolute;
   width: 100vw;
   background: black;
-  opacity: 0.5;
+  opacity: 0.75;
   margin-top: -10%;
   z-index: 1999;
   display: none;

@@ -62,10 +62,9 @@ class Password:
         )
         pwd.created_at = cls.__processDateTime(dbpass['createdat'])
         pwd.lastmodified_at = cls.__processDateTime(dbpass['lastmodifiedat'])
-        pwd.id = dbpass['userid']
+        pwd.id = dbpass['pwdid']
         pwd.sensitiveinfo = dbpass['sensitiveinfo']
         return pwd
-
 
 
     def __checkValidProp(self, prop, propname):
