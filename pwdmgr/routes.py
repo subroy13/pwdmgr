@@ -284,15 +284,15 @@ def user_delete():
         form = UserDeleteForm()
         if request.method == "POST":
             if form.validate():
-                if not user.verify_password_crypt(form.password.data):
+                if not user.verify_password_crypt(form.delpassword.data):
                     return jsonify({"errors": {"password": ["Invalid login password"], "mfa": ["Invalid MFA Code"]}}), 400
-                if not user.verify_totp(form.password.data, form.mfa.data):
+                if not user.verify_totp(form.delpassword.data, form.delmfa.data):
                     return jsonify({"errors": {"password": ["Invalid login password"], "mfa": ["Invalid MFA Code"]}})
                 try:
                     if form.softdelete.data:
-                        softDeleteUser(form.userid.data)
+                        softDeleteUser(user.id)
                     else:
-                        deleteUser(form.userid.data)
+                        deleteUser(user.id)
                     del session['loggedinuserid']
                     return jsonify({"data": user.serialize() }), 200
                 except Exception as e:

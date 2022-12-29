@@ -21,7 +21,7 @@
 
 To run the application simply use:
 
-`python3 -m app.py`
+`python3 app.py`
 
 
 ## Bug Fixes

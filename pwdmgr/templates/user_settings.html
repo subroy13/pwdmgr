@@ -77,9 +77,8 @@ Settings
                     <div class="d-flex align-items-center">
                         <form id="form-delete-user">
                             {{ render_field(form.csrf_token) }}
-                            {{ render_field(form.userid) }}
-                            {{ render_field(form.password) }}
-                            {{ render_field(form.mfa) }}
+                            {{ render_field(form.delpassword) }}
+                            {{ render_field(form.delmfa) }}
                             <div class="form-check">
                                 <input class="form-check-input form-control" type="checkbox" value="false" id="softdelete">
                                 <label class="form-check-label" for="softdelete">
@@ -107,7 +106,6 @@ Settings
                 error: document.getElementById(elem.id + "-error")
             }
         });
-        formfields.userid.input.value = "{{ user.id }}";
         $('#form-change-password').find('.form-control').each((i, elem) => {
             changepassfields[elem.id] = {
                 input: document.getElementById(elem.id),
@@ -187,6 +185,7 @@ Settings
 
 
         $('#form-delete-submit').click(function(e) {
+            $('.loader-wrapper').show();
             e.preventDefault();
 
             // clear up the form
@@ -200,8 +199,8 @@ Settings
             let body = JSON.stringify(Object.fromEntries(Object.entries(formfields).map(([k, v]) => {
                 return [k, v.input.value]
             })));
+            console.log(body);
 
-            $('.loader-wrapper').show();
             $.ajax({
                 url: "{{ url_for('user_delete') }}",
                 method: "POST",
@@ -224,11 +223,14 @@ Settings
                 error: function(err) {
                     $('.loader-wrapper').hide();
                     const responsedata = err.responseJSON;
+                    console.log(responsedata);
+                    console.log(formfields);
                     switch(err.status) {
                         case 400:
                             Object.keys(responsedata.errors).forEach((key) => {
                                 formfields[key].input.classList.add('is-invalid');
                                 if (formfields[key].error) {
+                                    console.log(responsedata.errors[key][0]);
                                     formfields[key].error.innerHTML = responsedata.errors[key][0];
                                 }
                             });

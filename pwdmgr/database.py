@@ -35,6 +35,19 @@ class Database:
             print(e)
             raise e
 
+    def executeScript(self, query_script):
+        con = self.getConnection()
+        try:
+            with con:
+                result = con.executescript(query_script)
+
+            # close the connection after done
+            con.close()
+        except Exception as e:
+            print(e)
+            raise e
+    
+
     def bulkinsert(self, tablename: str, rows: list):
         if len(rows) > 0:
             cols = list(rows[0].keys())

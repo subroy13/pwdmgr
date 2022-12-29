@@ -60,8 +60,8 @@ class Password:
             user,
             dbpass['description']
         )
-        pwd.created_at = cls.__processDateTime(dbpass['createdat'])
-        pwd.lastmodified_at = cls.__processDateTime(dbpass['lastmodifiedat'])
+        pwd.created_at = pwd.__processDateTime(dbpass['createdat'])
+        pwd.lastmodified_at = pwd.__processDateTime(dbpass['lastmodifiedat'])
         pwd.id = dbpass['pwdid']
         pwd.sensitiveinfo = dbpass['sensitiveinfo']
         return pwd

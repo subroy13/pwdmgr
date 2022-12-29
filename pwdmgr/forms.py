@@ -36,7 +36,7 @@ class NotEqualTo(object):  # --> Change to 'LessThan'
             }
             message = self.message
             if message is None:
-                message = field.gettext('Field must be equal to %(other_name)s.')
+                message = field.gettext('Field must not be equal to %(other_name)s.')
             raise ValidationError(message % d)
 
 ########################
@@ -59,9 +59,8 @@ class UserSigninForm(FlaskForm):
     mfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
     
 class UserDeleteForm(FlaskForm):
-    userid = HiddenField('User Id', validators=[InputRequired()])
-    password = PasswordField('Master Password', validators=[InputRequired()])
-    mfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
+    delpassword = PasswordField('Master Password', validators=[InputRequired()])
+    delmfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
     softdelete = BooleanField('Is soft deleted?', validators=[InputRequired()])
 
 class CreatePasswordForm(FlaskForm):
@@ -94,5 +93,5 @@ class DeletePasswordForm(FlaskForm):
 class ChangeMasterPasswordForm(FlaskForm):
     oldpass = PasswordField('Old Master Password', validators=[InputRequired()])
     mfa = StringField('MFA Code', validators=[InputRequired(), Length(min = 6, max = 6)])
-    newpass = PasswordField('New Master Password', validators=[InputRequired(), NotEqualTo('oldpass')])
+    newpass = PasswordField('New Master Password', validators=[InputRequired(), NotEqualTo('oldpass', message = 'New password must not be same as old password')])
     confirm_newpass = PasswordField('Confirm New Master Password', validators=[InputRequired(), EqualTo('newpass')])

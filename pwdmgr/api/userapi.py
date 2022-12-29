@@ -1,9 +1,10 @@
 # This python files handles all the CRUD operations logic
 # It abstracts over the DB
-from ..models import User, Password
+from ..models import User
 from .. import appdb
 from ..database import Database
 import time, os, pyotp
+from datetime import datetime
 
 
 def createNewUser(user: User, password: str):
@@ -74,14 +75,17 @@ def changeMasterPassword(user: User, oldpass: str, newpass: str, mfa: str):
             - Bulk update the encrypted sensitive info from temp table. 
             - Update the password_crypt fields in the "users" table.
     """
-    query = "CREATE TABLE tmppass(id INTEGER NOT NULL, sensitiveinfo VARCHAR NULL);"
+    from ..models import Password       # only this function require password model
+    query = "CREATE TABLE IF NOT EXISTS tmppass(id INTEGER NOT NULL, sensitiveinfo VARCHAR NULL);"
     appdb.executeQuery(query, [], False)
     
     # fetch all passwords
-    query = "SELECT pwdid, name, type, description FROM {} WHERE userid = $1 ORDER BY lastmodifiedat DESC;".format(Database.DB_PWD_TABLE)
+    query = "SELECT pwdid, name, type, description, createdat, lastmodifiedat, userid, sensitiveinfo \
+        FROM {} WHERE userid = $1 ORDER BY lastmodifiedat DESC;".format(Database.DB_PWD_TABLE)
     params = [user.id]
     rows = appdb.executeQuery(query, params, True)
     passlist = [Password.convertToPassword(row) for row in rows]
+    print(passlist)
 
     # generate master keys
     oldmasterkey = user.generateMasterKey(oldpass, mfa = mfa)
@@ -101,13 +105,17 @@ def changeMasterPassword(user: User, oldpass: str, newpass: str, mfa: str):
         BEGIN TRANSACTION;\
             UPDATE {} SET sensitiveinfo = t1.sensitiveinfo FROM\
             (SELECT id, sensitiveinfo FROM tmppass) AS t1\
-            WHERE {}.id = t1.id;\
-            UPDATE {} SET password = $1, qrseed = $2 WHERE userid = $3;\
-        END TRANSACTION;".format(
+            WHERE {}.pwdid = t1.id;\
+            UPDATE {} SET password = '{}', qrseed = '{}', lastmodifiedat = '{}' WHERE userid = '{}';\
+            DROP TABLE IF EXISTS tmppass;\
+        COMMIT;".format(
             Database.DB_PWD_TABLE, 
             Database.DB_PWD_TABLE,
-            Database.DB_USER_TABLE
+            Database.DB_USER_TABLE,
+            user.password.replace("'", "''"),
+            user.qr_seed.replace("'", "''"),
+            str(datetime.now().timestamp()),
+            user.id
         )
-    params = [user.password, user.qr_seed, user.id]
-    appdb.executeQuery(transaction_query, params, False)
+    appdb.executeScript(transaction_query)
     
