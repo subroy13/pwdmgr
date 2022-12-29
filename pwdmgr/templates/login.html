@@ -1,0 +1,119 @@
+{% extends '_base.html' %}
+{% from './macros/forms.html' import render_field %}
+
+{% block pagetitle %}
+Login
+{% endblock %}
+
+{% block customcss %}
+<style>
+    .form-container {
+        max-width: 330px;
+        padding: 15px;
+    }
+
+    .form-container .form-floating:focus-within {
+        z-index: 2;
+    }
+
+    .form-container input[type="email"] {
+        margin-bottom: -1px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .form-container input[type="password"] {
+        margin-bottom: 10px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container text-center my-5 py-5" style="background: lightsteelblue; border-radius: 10px;">
+    <main class="form-container w-100 m-auto">
+        <form id="form-signin">
+            {{ render_field(form.csrf_token) }}
+            <div class="mb-4">
+                <span>
+                    <i class="fas fa-unlock-alt fa-2x"></i>
+                    <i class="fas fa-key" style="margin-left: -5px; font-size: small;"></i>
+                </span>
+            </div>
+            <h1 class="h4 mb-3 fw-normal">Please sign in</h1>
+
+            {{ render_field(form.username) }}
+            {{ render_field(form.password) }}
+            {{ render_field(form.mfa) }}
+            <button class="w-100 btn btn-lg btn-primary" type="submit" id="form-signin-submit">Sign in</button>
+        </form>
+    </main>
+</div>
+{% endblock %}
+
+{% block customjs %}
+<script>
+    $(document).ready(() => {
+        let formfields = {};
+        $('#form-signin').find('.form-control').each((i, elem) => {
+            formfields[elem.id] = {
+                input: document.getElementById(elem.id),
+                error: document.getElementById(elem.id + "-error")
+            }
+        });
+
+        // select the signup form
+        $('#form-signin-submit').click(function(e) {
+            e.preventDefault();
+
+            // clear up the form
+            Object.keys(formfields).forEach((key) => {
+                formfields[key].input.classList.remove('is-invalid');
+                if (formfields[key].error) {
+                    formfields[key].error.innerHTML = "";
+                }
+            });
+
+            let body = JSON.stringify(Object.fromEntries(Object.entries(formfields).map(([k, v]) => {
+                return [k, v.input.value]
+            })));
+
+            $('.loader-wrapper').show();
+            $.ajax({
+                url: "{{ url_for('login') }}",
+                method: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                data: body,
+                success: function(responsedata) {
+                    $('.loader-wrapper').hide();
+                    window.location.replace("{{ url_for('dashboard') }}");
+                },
+                error: function(err) {
+                    $('.loader-wrapper').hide();
+                    const responsedata = err.responseJSON;
+                    switch(err.status) {
+                        case 400:
+                            Object.keys(responsedata.errors).forEach((key) => {
+                                formfields[key].input.classList.add('is-invalid');
+                                if (formfields[key].error) {
+                                    formfields[key].error.innerHTML = responsedata.errors[key][0];
+                                }
+                            });
+                            break;
+                        default:
+                            $.alert({
+                                title: 'Encountered an error!',
+                                content: String(responsedata.errors),
+                                type: 'red',
+                                typeAnimated: true,
+                            });
+                            break;
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

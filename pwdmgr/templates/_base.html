@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        PwdMgr | {% block pagetitle %} {% endblock %}
+    </title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'bootstrap.min.css') }}">
+
+    <!-- Font awesome Kit-->
+    <script src="{{ url_for('static', filename = 'font-awesome-kit.js') }}" crossorigin="anonymous"></script>
+
+    <!-- Jquery confirm box -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'jquery-confirm.min.css') }}">
+
+    <!-- Base CSS Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'main.css') }}">
+
+    {% block customcss %}{% endblock %}
+</head>
+<body>
+
+    <div class="loader-wrapper">
+        <span class="loader"></span>
+    </div>
+    <div class="container-fluid">
+        <div class="h-100 w-100 text-center fullscreen-container">
+            {% include './macros/navbar.html' %}
+            <div class="cover-container w-100 h-100 p-3 mx-auto">
+              {% block content %}{% endblock %}        
+            </div>
+            {% include './macros/footer.html' %}
+          </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="{{ url_for('static', filename = 'jquery-3.6.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'jquery-confirm.min.js') }}"></script>
+    {% block customjs %}{% endblock %}
+</body>
+</html>

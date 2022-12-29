@@ -1,0 +1,34 @@
+{% extends '_base.html' %}
+{% block pagetitle %}
+    A lightweight password manager app
+{% endblock %}
+
+{% block customcss %}
+    <style>
+        /* Custom default button */
+        .btn-secondary,
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            color: #333;
+            text-shadow: none; /* Prevent inheritance from `body` */
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+<main class="w-100 h-100 px-3 d-flex flex-column justify-content-center align-items-center">
+    <div class="row my-5 py-5">
+        <div class="col-md-8 mx-auto">
+            <h1>Password Manager</h1>
+            <p class="lead">
+                A simple, elegant and <b>open source</b> password manager built under the assumption of zero-trust model. 
+            </p>
+            <p class="lead">
+              <a href="{{ url_for('login') }}" class="btn btn-lg btn-secondary text-white fw-bold">Login</a>
+              <a href="{{ url_for('signup') }}" class="btn btn-lg btn-secondary text-light fw-bold ml-3">Signup</a>        
+            </p>          
+        </div>
+    </div>
+</main>
+{% endblock %}

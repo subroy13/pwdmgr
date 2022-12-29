@@ -1,2 +1,2 @@
-from .password import Password
 from .user import User
+from .password import Password

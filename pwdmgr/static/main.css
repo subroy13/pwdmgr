@@ -1,0 +1,83 @@
+/*
+* Base structure
+*/
+
+body {
+  min-height: 100vh;
+}
+
+.cover-container {
+    margin-top: 4rem;
+    max-width: 64em;
+    height: 100%;
+}
+
+
+
+.navbar {
+  height: 65px;
+  padding-left: 20px;
+  padding-right: 20px;
+  box-shadow: -1px -1px 10px black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.navbar .dropdown-menu[data-bs-popper] {
+  left: auto;
+  right: 0;
+}
+
+footer {
+  height: 50px;
+}
+
+
+.loader-wrapper {
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: black;
+  opacity: 0.75;
+  z-index: 1999;
+  display: none;
+}
+
+
+.loader {
+  width: 100px;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  z-index: 2000;
+  position: relative;
+  border-radius: 50%;
+  background: #fff;
+  animation: wave 1s ease-in infinite;
+}
+
+@keyframes wave {
+ 0% {  box-shadow:
+  0 0 0 0px rgba(255, 255,255, 1),
+  0 0 0 20px rgba(255, 255,255, 0.2),
+  0 0 0 40px rgba(255, 255,255, 0.6),
+  0 0 0 60px rgba(255, 255,255, 0.4),
+  0 0 0 80px rgba(255, 255,255, 0.2)
+  }
+  100% {  box-shadow:
+    0 0 0 80px rgba(255, 255,255, 0),
+    0 0 0 60px rgba(255, 255,255, 0.2),
+    0 0 0 40px rgba(255, 255,255, 0.4),
+    0 0 0 20px rgba(255, 255,255, 0.6),
+    0 0 0 0px rgba(255, 255,255, 1)
+  }
+}
+
+
+  
