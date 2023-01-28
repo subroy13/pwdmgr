@@ -55,7 +55,7 @@ Dashboard
                                 data-bs-toggle="modal"><i class="fa fa-solid fa-eye"></i></button>
                             <button class="btn btn-warning mx-1 edit-password-btn" data-id-value="{{ pwd.id }}"
                                 data-name-value="{{ pwd.name }}"><i class="fa fa-solid fa-pen"></i></button>
-                            <button class="btn btn-danger mx-1 password-delete-modal-btn" id-value="{{ pwd.id }}"
+                            <button class="btn btn-danger mx-1 password-delete-modal-btn" data-id-value="{{ pwd.id }}"
                                 data-bs-toggle="modal"><i class="fa fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
@@ -169,7 +169,7 @@ Dashboard
             ]
         });
 
-        $('.edit-password-btn').click(function (e) {
+        $('#password-list').on('click', '.edit-password-btn', function(e) {
             e.preventDefault();
             var pwdid = $(this).attr('data-id-value');
             var pwdname = $(this).attr('data-name-value');
@@ -188,10 +188,9 @@ Dashboard
             });
         });
 
-        $('.password-view-modal-btn').click(function (e) {
+        $('#password-list').on('click', '.password-view-modal-btn', function(e) {
             e.preventDefault();
             var pwdid = $(this).attr('data-id-value');
-            console.log(pwdid);
             $('#viewpwdid').val(pwdid);
             $('#password-view-modal').modal('show');
 
@@ -341,14 +340,12 @@ Dashboard
                     });
                 }
             });
-
-
-
         });
 
-        $('.password-delete-modal-btn').click(function (e) {
+        $('#password-list').on('click', '.password-delete-modal-btn', function(e) {
             e.preventDefault();
-            var pwdid = $(this).attr('id-value');
+            var pwdid = $(this).attr('data-id-value');
+            console.log(e, pwdid);
             $('#delpwdid').val(pwdid);
             $('#password-delete-modal').modal('show');
 
@@ -412,10 +409,8 @@ Dashboard
                     }
                 });
             });
-
         });
-
-
+        
     });
 </script>
 {% endblock %}
